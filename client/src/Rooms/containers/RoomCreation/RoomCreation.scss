@@ -1,0 +1,15 @@
+.room-create {
+  &-wrapper {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    label {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}

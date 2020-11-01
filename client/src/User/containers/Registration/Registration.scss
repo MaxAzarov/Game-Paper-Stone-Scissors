@@ -1,0 +1,31 @@
+.registration-wrapper {
+  display: flex;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  .registration {
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    border: 1px solid black;
+    flex-direction: column;
+    justify-content: space-between;
+    &-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      input {
+        height: 30px;
+        padding-left: 5px;
+        outline: none;
+        width: 200px;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        margin-right: 5px;
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+.home {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  img {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+  }
+  span {
+    text-decoration: none;
+    color: #000;
+    text-transform: uppercase;
+    margin-top: 50px;
+    &:hover {
+      font-size: 20px;
+      transition: all 500ms ease-in-out;
+    }
+  }
+  &-game,
+  &-room {
+    text-decoration: none;
+    margin-top: 30px;
+    &:hover {
+      font-size: 20px;
+    }
+  }
+}

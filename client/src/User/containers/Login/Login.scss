@@ -1,0 +1,28 @@
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  .login {
+    &-title {
+      text-transform: uppercase;
+      text-align: center;
+    }
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    &-row {
+      label {
+        margin-right: 5px;
+      }
+      display: flex;
+      margin-bottom: 5px;
+      justify-content: space-between;
+    }
+  }
+}

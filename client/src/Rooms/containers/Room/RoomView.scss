@@ -1,0 +1,36 @@
+.room {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  &-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    .room-name {
+      font-family: "Arial", sans-serif;
+    }
+    .room-id {
+      font-family: "Arial", sans-serif;
+    }
+  }
+  &-opponent {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  &-user {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 10px;
+  }
+  &-error {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: red;
+  }
+}
