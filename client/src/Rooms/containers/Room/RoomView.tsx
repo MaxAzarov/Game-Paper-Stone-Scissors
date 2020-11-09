@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 
-import { IUser, Room } from "../../../../../types/rootTypes";
+import { IMatchResult, IUser, Room } from "../../../../../types/rootTypes";
 import Buttons from "../../../Common/components/Buttons/Buttons";
 import getRoom from "../../graphql/Query/GetRoom";
 import roomSendUserChoice from "../../graphql/Mutation/RoomSendUserChoice";
 import roomGetMatchResult from "../../graphql/Subscription/RoomGetMatchResult";
+import GameResult from "../../../Common/components/GameResult/GameResult";
+import RoomInfo from "../../components/RoomInfo/RoomInfo";
 import { client } from "../../..";
 import "./RoomView.scss";
 
@@ -22,12 +24,14 @@ interface IGetRoom {
 const RoomView = ({ id, opponent }: Props) => {
   const [userChoice, setUserChoice] = useState<number | null>();
   const [enemy, setEnemy] = useState<IUser | undefined | null>(opponent);
+  const [matchResult, setMatchResult] = useState<IMatchResult>();
+  const [opponentChoice, setOpponentChoice] = useState();
+  const [roomSendUserOption] = useMutation(roomSendUserChoice);
   const { data, loading } = useQuery<IGetRoom>(getRoom, {
     variables: {
       id,
     },
   });
-  const [roomSendUserOption] = useMutation(roomSendUserChoice);
 
   useEffect(() => {
     setEnemy(opponent);
@@ -47,6 +51,8 @@ const RoomView = ({ id, opponent }: Props) => {
       .subscribe({ query: roomGetMatchResult })
       .subscribe(({ data }) => {
         console.log("result of battle:", data);
+        setMatchResult(data.roomGetMatchResult.result);
+        setOpponentChoice(data.roomGetMatchResult.opponent);
       });
 
     return () => {
@@ -56,7 +62,7 @@ const RoomView = ({ id, opponent }: Props) => {
 
   useEffect(() => {
     if (userChoice !== undefined) {
-      console.log(id, userChoice);
+      // console.log(id, userChoice);
       roomSendUserOption({
         variables: {
           result: userChoice,
@@ -69,7 +75,6 @@ const RoomView = ({ id, opponent }: Props) => {
   if (!loading && data && data.getRoom.error) {
     return <div className="room-error">Can't get this room</div>;
   }
-  // console.log(userChoice);
 
   let date;
   if (data) {
@@ -77,20 +82,14 @@ const RoomView = ({ id, opponent }: Props) => {
   }
   return (
     <section className="room">
-      <div className="room-info">
-        Room name: <span className="room-name">{data?.getRoom?.name}</span>
-        <br />
-        Room id:
-        <p className="room-id">{data?.getRoom?.id}</p>
-        Created at: {date && date.getHours()} hour {date && date.getMinutes()}{" "}
-        minute {date && date.getSeconds()} seconds
-      </div>
-
-      <p className="room-opponent">
-        opponent: {enemy?.nickname || "waiting..."}
-      </p>
-      {!enemy?.nickname && <p>Please wait for new user to start game...</p>}
-      {/* {enemy?.nickname && } */}
+      <RoomInfo date={date} enemy={enemy} data={data}></RoomInfo>
+      {matchResult && (
+        <GameResult
+          matchResult={matchResult}
+          choice={userChoice}
+          random={opponentChoice}
+        ></GameResult>
+      )}
       <Buttons
         initialResult={enemy?.nickname}
         setUserChoice={setUserChoice}

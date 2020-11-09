@@ -17,8 +17,9 @@ interface Props {
 const Rooms = ({ match }: RouteComponentProps<Props>) => {
   const [RoomUpdate] = useMutation(roomUpdate);
   const [opponent, setOpponent] = useState<IUser | null | undefined>();
+
   useEffect(() => {
-    const subscription = client
+    const userJoin = client
       .subscribe({
         query: roomUserJoin,
       })
@@ -35,7 +36,7 @@ const Rooms = ({ match }: RouteComponentProps<Props>) => {
       });
 
     return () => {
-      subscription.unsubscribe();
+      userJoin.unsubscribe();
       userLeave.unsubscribe();
       RoomUpdate({
         variables: {

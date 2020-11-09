@@ -29,3 +29,6 @@ export interface Room {
   createdAt: string;
   updatedAt: string;
 }
+export interface IGetRoom {
+  getRoom: Room & { error: [string] };
+}

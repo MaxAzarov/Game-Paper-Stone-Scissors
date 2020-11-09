@@ -34,7 +34,7 @@ const RoomItem = ({ roomId, index, item, roomPassword, setRoomId }: Props) => {
             id: item.id,
             password: roomPassword,
           },
-        });
+        }).catch((e) => console.log(e));
         setRoomId(item.id);
       }}
     >

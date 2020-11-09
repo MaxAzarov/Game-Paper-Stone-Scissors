@@ -1,5 +1,5 @@
 .room-create {
-  &-wrapper {
+  &__wrapper {
     display: flex;
     flex-direction: column;
     position: absolute;
@@ -10,6 +10,10 @@
       width: 100%;
       display: flex;
       justify-content: space-between;
+      margin-bottom: 5px;
     }
+  }
+  &__error {
+    color: red;
   }
 }

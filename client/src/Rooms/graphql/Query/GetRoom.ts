@@ -9,10 +9,9 @@ const getRoom = gql`
         nickname
       }
       name
-      # password
       createdAt
       updatedAt
-      error
+      errors
     }
   }
 `;

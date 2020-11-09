@@ -1,7 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
-import * as serviceWorker from "./serviceWorker";
 import { BrowserRouter } from "react-router-dom";
 import { setContext } from "@apollo/client/link/context";
 import { Provider } from "react-redux";
@@ -11,11 +9,16 @@ import {
   ApolloProvider,
   InMemoryCache,
   split,
+  ApolloLink,
 } from "@apollo/client";
-import { store } from "./redux/reducers/rootReducer";
-
+import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { WebSocketLink } from "@apollo/client/link/ws";
+
+import { store } from "./redux/reducers/rootReducer";
+import * as serviceWorker from "./serviceWorker";
+import App from "./App";
+
 const httpLink = createHttpLink({
   uri: "http://localhost:5000/graphql",
 });
@@ -39,17 +42,31 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const link = split(
-  ({ query }) => {
-    const definition = getMainDefinition(query);
-    return (
-      definition.kind === "OperationDefinition" &&
-      definition.operation === "subscription"
-    );
-  },
-  wsLink,
-  authLink.concat(httpLink)
-);
+let link = ApolloLink.from([
+  onError(({ graphQLErrors, networkError }) => {
+    if (graphQLErrors) {
+      // graphQLErrors.map(({ message, locations, path }) =>
+      // console.log(
+      //   `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+      // )
+      // );
+    }
+    if (networkError)
+      console.error(`[Network error]: ${networkError}`, networkError.stack);
+  }),
+  authLink,
+  split(
+    ({ query }) => {
+      const definition = getMainDefinition(query);
+      return (
+        definition.kind === "OperationDefinition" &&
+        definition.operation === "subscription"
+      );
+    },
+    wsLink,
+    httpLink
+  ),
+]);
 
 export const cache = new InMemoryCache();
 

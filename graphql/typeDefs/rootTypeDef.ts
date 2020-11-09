@@ -4,6 +4,11 @@ import userGame from "./UserGame";
 import rooms from "./Rooms";
 
 const root = gql`
+  directive @auth on FIELD_DEFINITION
+  type Response {
+    status: String
+    errors: [String]
+  }
   type Query {
     _: String
   }

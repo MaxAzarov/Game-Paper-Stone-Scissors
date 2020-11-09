@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 const getUsersStatistics = gql`
   query {
     getUsersStatistics {
-      error
+      errors
       data {
         nickname
         percentOfWin

@@ -5,7 +5,6 @@ const getRooms = gql`
     getRooms {
       rooms {
         name
-        password
         id
         users {
           user
@@ -14,6 +13,7 @@ const getRooms = gql`
         createdAt
         updatedAt
       }
+      errors
     }
   }
 `;

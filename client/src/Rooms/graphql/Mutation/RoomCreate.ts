@@ -9,9 +9,9 @@ const RoomCreate = gql`
         nickname
       }
       name
-      password
       createdAt
       updatedAt
+      errors
     }
   }
 `;

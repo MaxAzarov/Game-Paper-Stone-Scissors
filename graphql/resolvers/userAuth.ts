@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs";
-import { PubSub } from "apollo-server-express";
 import jwt from "jsonwebtoken";
 
 import User, { IUser } from "./../../models/User";
@@ -13,10 +12,6 @@ interface UserLogin {
   data: string;
   password: string;
 }
-
-const pubsub = new PubSub();
-
-const USER_LOGIN = "USER_LOGIN";
 const resolvers = {
   Query: {
     UserLogin: async function (_: any, { data, password }: UserLogin) {
@@ -80,7 +75,6 @@ const resolvers = {
       _: any,
       { email, nickname, password }: UserRegister
     ) {
-      // console.log(email, nickname, password);
       const user = await User.findOne({ email });
       if (user) {
         return {
@@ -90,24 +84,10 @@ const resolvers = {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ email, nickname, password: hashedPassword });
         await newUser.save();
-        // console.log(newUser);
-        pubsub.publish(USER_LOGIN, { status: "ok" });
         return {
           status: "ok",
         };
       }
-    },
-  },
-  Subscription: {
-    login: {
-      subscribe: () => pubsub.asyncIterator([USER_LOGIN]),
-      resolve: (payload: any) => {
-        console.log("response:", payload);
-
-        return {
-          ...payload,
-        };
-      },
     },
   },
 };

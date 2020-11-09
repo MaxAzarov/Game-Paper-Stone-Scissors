@@ -8,19 +8,23 @@ import "./RoomCreation.scss";
 const RoomCreation = () => {
   const [roomName, setRoomName] = useState<string>("");
   const [roomPassword, setRoomPassword] = useState<string>("");
-  const [createRoom, { data }] = useMutation(RoomCreate);
+  const [createRoom, { data, error }] = useMutation(RoomCreate);
   const history = useHistory();
   console.log("new room:", data);
 
   useEffect(() => {
-    if (data) {
+    if (data && data.roomCreate.id) {
       history.push(`/room/${data.roomCreate.id}`);
     }
   }, [data, history]);
 
   return (
     <section className="room-create">
-      <div className="room-create-wrapper">
+      <div className="room-create__wrapper">
+        {data && data.roomCreate.error && (
+          <div className="room-create__error">{data.roomCreate.error[0]}</div>
+        )}
+        {error && <div className="room-create__error">{error.message}</div>}
         <label htmlFor="room-name">
           Room Name:
           <input
@@ -49,6 +53,8 @@ const RoomCreation = () => {
                 name: roomName,
                 password: roomPassword,
               },
+            }).catch((e) => {
+              console.log(e.message);
             });
           }}
         >

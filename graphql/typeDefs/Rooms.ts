@@ -4,11 +4,6 @@ const typeDefs = gql`
   type User {
     user: String
     nickname: String
-    # id: String
-  }
-  type Response {
-    status: String
-    error: [String]
   }
 
   enum MatchResult {
@@ -16,27 +11,33 @@ const typeDefs = gql`
     Defeat
     Draw
   }
+
+  type RoomUserChoiceAndResult {
+    result: MatchResult
+    opponent: Int
+  }
+
   type GetRoomResponse {
     id: ID
     users: [User]
     name: String
-    password: String
     createdAt: String
     updatedAt: String
-    error: [String!]
+    errors: [String!]
   }
   type Rooms {
     rooms: [GetRoomResponse]
+    errors: [String!]
   }
   extend type Mutation {
-    roomCreate(name: String!, password: String!): GetRoomResponse
-    roomUpdate(id: String!): Response
-    roomJoin(id: String!, password: String!): Response
-    roomSendUserChoice(roomId: String!, result: Int!): Response
+    roomCreate(name: String!, password: String!): GetRoomResponse @auth
+    roomUpdate(id: String!): Response @auth
+    roomJoin(id: String!, password: String!): Response @auth
+    roomSendUserChoice(roomId: String!, result: Int!): Response @auth
   }
   extend type Query {
-    getRooms: Rooms
-    getRoom(id: String!): GetRoomResponse
+    getRooms: Rooms @auth
+    getRoom(id: String!): GetRoomResponse @auth
   }
 
   extend type Subscription {
@@ -44,7 +45,8 @@ const typeDefs = gql`
     roomUserJoin: User
     roomLastUserLeave: String!
     roomUserLeave: String!
-    roomGetMatchResult: MatchResult!
+    # roomGetMatchResult: MatchResult! @auth
+    roomGetMatchResult: RoomUserChoiceAndResult! @auth
   }
 `;
 export default typeDefs;

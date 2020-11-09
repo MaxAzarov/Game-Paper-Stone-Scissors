@@ -17,7 +17,6 @@ export interface IRoom extends Document {
   password: string;
   createdAt: string;
   updatedAt: string;
-  // usersGame: User[] & { choice: number };
   usersGame: IUserGame[];
 }
 

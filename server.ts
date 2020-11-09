@@ -1,5 +1,5 @@
 import express, { Application } from "express";
-import mongoose, { Error } from "mongoose";
+import mongoose from "mongoose";
 import http from "http";
 import cors from "cors";
 import { ApolloServer } from "apollo-server-express";
@@ -7,12 +7,16 @@ import { ApolloServer } from "apollo-server-express";
 import resolvers from "./graphql/resolvers/rootResolver";
 import typeDefs from "./graphql/typeDefs/rootTypeDef";
 import TokenDecode from "./middlewares/auth";
+import AuthDirective from "./directives/AuthDirectives";
 
 const app: Application = express();
 const PORT = 5000;
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  schemaDirectives: {
+    auth: AuthDirective,
+  },
   playground: true,
   context: async ({ req, connection }) => {
     let user;
@@ -26,10 +30,15 @@ const server = new ApolloServer({
 
     if (req.headers.authorization) {
       user = await TokenDecode(req.headers.authorization);
+      if (user) {
+        return {
+          user,
+        };
+      }
     }
-    return {
-      user,
-    };
+  },
+  formatError(e) {
+    return e;
   },
 });
 

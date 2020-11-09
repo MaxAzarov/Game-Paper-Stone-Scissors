@@ -9,10 +9,11 @@ import Game from "./User/containers/Game/Game";
 import Home from "./Common/components/Home/Home";
 import RoomsView from "./Rooms/containers/RoomContainer/RoomContainer";
 import RoomCreate from "./Rooms/containers/RoomCreation/RoomCreation";
+import PrivateRoute from "./Common/components/PrivateRoute/PrivateRoute";
 import Room from "./Rooms/containers/Room/Room";
 import "./App.scss";
 
-function App() {
+const App = () => {
   const dispatch = useDispatch();
   const token: string | null = localStorage.getItem("token");
   const id: string | null = localStorage.getItem("id");
@@ -29,23 +30,19 @@ function App() {
       <Route path="/register" exact>
         <Registration></Registration>
       </Route>
-      <Route path="/game" exact>
-        <Game></Game>
-      </Route>
-      <Route path="/rooms" exact>
-        <RoomsView></RoomsView>
-      </Route>
-      <Route path="/room/:id">
-        <Room></Room>
-      </Route>
-      <Route path="/room-create" exact>
-        <RoomCreate></RoomCreate>
-      </Route>
+      <PrivateRoute path="/game" exact component={Game} />
+      <PrivateRoute path="/rooms" exact component={RoomsView}></PrivateRoute>
+      <PrivateRoute path="/room/:id" exact component={Room}></PrivateRoute>
+      <PrivateRoute
+        path="/room-create"
+        exact
+        component={RoomCreate}
+      ></PrivateRoute>
       <Route path="/" exact>
         <Home></Home>
       </Route>
     </Switch>
   );
-}
+};
 
 export default App;

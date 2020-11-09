@@ -1,0 +1,42 @@
+.match-view {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+
+  &__result {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .paper {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .scissors,
+  .stone {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: scaleX(-1) translateY(-50%);
+  }
+
+  .paper-reverse {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1) translateY(-50%);
+  }
+
+  .scissors-reverse,
+  .stone-reverse {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}

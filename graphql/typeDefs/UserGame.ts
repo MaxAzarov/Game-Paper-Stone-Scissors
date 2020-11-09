@@ -1,12 +1,8 @@
 import { gql } from "apollo-server-express";
 
 const typedefs = gql`
-  type Error {
-    error: [String]
-  }
-
   type MatchResultResponse {
-    error: [String]
+    errors: [String]
     wins: Int
     defeat: Int
     draw: Int
@@ -18,16 +14,14 @@ const typedefs = gql`
     percentOfWin: Float
   }
   type UsersStatistics {
-    error: [String]
+    errors: [String]
     data: [UserStats]
   }
-
   extend type Mutation {
-    sendMatchResult(result: String!): MatchResultResponse!
+    sendUserMatchResult(result: String!): Response! @auth
   }
-
   extend type Query {
-    getUserMatchResult: MatchResultResponse!
+    getUserMatchResult: MatchResultResponse! @auth
     getUsersStatistics: UsersStatistics!
   }
 `;

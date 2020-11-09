@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
-import { Link } from "react-router-dom";
 
-import sendMatchRes from "../../graphql/Mutation/SendMatchResult";
+import sendMatchRes from "../../graphql/Mutation/SendUserMatchResult";
 import UserStatistics from "../../components/UserStatistics/UserStatistics";
 import getUserMatchResult from "../../graphql/Query/GetUserMatchResult";
-import {
-  IMatchResult,
-  Result,
-  UserStats,
-} from "./../../../../../types/rootTypes";
-// import { GameLogic } from "../../../../../utilities/GameLogic";
+import { IMatchResult, UserStats } from "./../../../../../types/rootTypes";
 import Statistics from "../../components/Statistics/Statistics";
 import getUsersStatistics from "../../graphql/Query/GetUsersStatistics";
 import Buttons from "../../../Common/components/Buttons/Buttons";
-import "./Game.scss";
 import GameLogic from "../../utilities/GameLogic";
+import GameResult from "../../../Common/components/GameResult/GameResult";
+import GameError from "../../../Common/components/GameError/GameError";
+import "./Game.scss";
 
 interface IUserStatistics {
   getUsersStatistics: {
@@ -26,87 +22,71 @@ interface IUserStatistics {
 const Game = () => {
   const [userChoice, setUserChoice] = useState<number | null>();
   const [random, setRandom] = useState<number>();
-  const [result, setResult] = useState<Result>({
-    wins: 0,
-    defeat: 0,
-    draw: 0,
-    percentOfWin: 0,
-  });
-  const [statistics, setStatistics] = useState<UserStats[]>();
-  const [sendMatchResult, { data }] = useMutation(sendMatchRes, {
-    fetchPolicy: "no-cache",
-  });
-  const { data: initialResult } = useQuery(getUserMatchResult);
-  const { data: stats } = useQuery<IUserStatistics>(getUsersStatistics);
+  const [choice, setChoice] = useState<number | null>();
+  const [matchResult, setMatchResult] = useState<IMatchResult | null>();
+  const [sendMatchResult, { data, error }] = useMutation(sendMatchRes);
+  const {
+    data: initialUserResult,
+    error: MatchResultError,
+    refetch,
+  } = useQuery(getUserMatchResult);
+  const { data: stats, refetch: UserStatisticsRefetch } = useQuery<
+    IUserStatistics
+  >(getUsersStatistics);
 
   useEffect(() => {
-    if (initialResult) {
-      setResult({
-        wins: initialResult.getUserMatchResult.wins,
-        defeat: initialResult.getUserMatchResult.defeat,
-        draw: initialResult.getUserMatchResult.draw,
-        percentOfWin: initialResult.getUserMatchResult.percentOfWin,
-      });
-    }
     if (data) {
-      setResult({
-        wins: data.sendMatchResult.wins,
-        defeat: data.sendMatchResult.defeat,
-        draw: data.sendMatchResult.draw,
-        percentOfWin: data.sendMatchResult.percentOfWin,
-      });
-      setStatistics(data.sendMatchResult.data);
+      UserStatisticsRefetch().catch((e) => console.log("user statistics"));
+      refetch().catch((e) => console.log("users statistics"));
     }
-  }, [initialResult, data, setStatistics]);
+  }, [data, refetch, UserStatisticsRefetch]);
 
   useEffect(() => {
-    let MatchResult: IMatchResult;
-    setRandom(Math.floor(Math.random() * 3));
-    if (userChoice !== undefined) {
+    if (userChoice !== undefined && userChoice !== null) {
+      let MatchResult: IMatchResult;
+      let rand = Math.floor(Math.random() * 3);
+      setRandom(rand);
+      MatchResult = GameLogic(rand, userChoice as number);
       console.log("random:", random);
       console.log("user:", userChoice);
-      MatchResult = GameLogic(random as number, userChoice as number);
       console.log("result", MatchResult);
+      setChoice(userChoice);
+      setMatchResult(MatchResult);
       sendMatchResult({
         variables: {
           result: MatchResult,
         },
       });
+      setUserChoice(undefined);
     }
-    setUserChoice(undefined);
   }, [userChoice, setUserChoice, sendMatchResult, random]);
 
-  useEffect(() => {
-    if (stats) {
-      setStatistics(stats.getUsersStatistics.data);
-    }
-  }, [setStatistics, stats]);
   return (
     <section className="single-game">
-      <div className="single-game__wrapper">
-        {/* all statistics */}
-        {statistics && (
-          <Statistics getUsersStatistics={statistics}></Statistics>
-        )}
-        {!initialResult && (
-          <div className="single-game__error">
-            Please login to play! &nbsp;
-            {
-              <Link
-                to="/login"
-                style={{ textDecoration: "none", color: "#000" }}
-              >
-                Click here to login
-              </Link>
-            }
-          </div>
-        )}
-        <Buttons
-          setUserChoice={setUserChoice}
-          initialResult={initialResult}
-        ></Buttons>
-        <UserStatistics statistics={result}></UserStatistics>
-      </div>
+      {/* <div className="single-game__wrapper"> */}
+      {stats && (
+        <Statistics
+          getUsersStatistics={stats.getUsersStatistics.data}
+        ></Statistics>
+      )}
+      <GameResult
+        choice={choice}
+        random={random}
+        matchResult={matchResult}
+      ></GameResult>
+      {(!initialUserResult || error || MatchResultError) && (
+        <GameError></GameError>
+      )}
+      <Buttons
+        setUserChoice={setUserChoice}
+        initialResult={initialUserResult}
+      ></Buttons>
+      {initialUserResult && (
+        <UserStatistics
+          statistics={initialUserResult.getUserMatchResult}
+        ></UserStatistics>
+      )}
+      {/* </div> */}
     </section>
   );
 };

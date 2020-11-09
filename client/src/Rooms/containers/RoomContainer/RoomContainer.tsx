@@ -24,9 +24,11 @@ const RoomsView: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomPassword, setRoomPassword] = useState<string>("");
   const [roomId, setRoomId] = useState<string>("");
-  const { data } = useQuery<IRooms, string>(getRooms, {
+  const { data, error } = useQuery<IRooms, string>(getRooms, {
     fetchPolicy: "network-only",
   });
+  // console.log(data);
+  console.log(error && error.message);
   useEffect(() => {
     if (data) {
       setRooms(data.getRooms.rooms);
@@ -35,7 +37,7 @@ const RoomsView: React.FC = () => {
 
   useEffect(() => {
     // room created
-    const subscription = client
+    const roomCreateSubscription = client
       .subscribe<RoomCreated>({
         query: roomCreated,
       })
@@ -56,7 +58,7 @@ const RoomsView: React.FC = () => {
       });
 
     return () => {
-      subscription.unsubscribe();
+      roomCreateSubscription.unsubscribe();
       roomDeleteSubscription.unsubscribe();
     };
   });

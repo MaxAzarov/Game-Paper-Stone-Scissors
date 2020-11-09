@@ -7,23 +7,18 @@ const typeDefs = gql`
     nickname: String
     errors: [String]
   }
-  type UserRegisterResponse {
-    errors: [String]
-    status: String
-  }
   extend type Mutation {
     UserRegister(
       email: String!
       nickname: String!
       password: String!
-    ): UserRegisterResponse!
+    ): Response!
   }
   extend type Query {
     UserLogin(data: String!, password: String!): UserLoginResponse!
   }
-
   extend type Subscription {
-    login: UserRegisterResponse
+    login: Response
   }
 `;
 export default typeDefs;

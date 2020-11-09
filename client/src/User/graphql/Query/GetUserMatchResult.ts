@@ -5,7 +5,7 @@ const getUserMatchResult = gql`
     getUserMatchResult {
       wins
       draw
-      error
+      errors
       defeat
       percentOfWin
     }
