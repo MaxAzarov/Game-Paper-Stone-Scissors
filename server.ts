@@ -2,7 +2,9 @@ import express, { Application } from "express";
 import mongoose from "mongoose";
 import http from "http";
 import cors from "cors";
+import dotenv from "dotenv";
 import { ApolloServer } from "apollo-server-express";
+// import { EventEmitter } from "events";
 
 import resolvers from "./graphql/resolvers/rootResolver";
 import typeDefs from "./graphql/typeDefs/rootTypeDef";
@@ -10,7 +12,11 @@ import TokenDecode from "./middlewares/auth";
 import AuthDirective from "./directives/AuthDirectives";
 
 const app: Application = express();
-const PORT = 5000;
+// const eventEmitter = new EventEmitter();
+// eventEmitter.setMaxListeners(55);
+// console.log("eventEmitter", eventEmitter);
+dotenv.config();
+const { PORT = 5000, MONGODB_USER, MONGODB_PASS } = process.env;
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -30,11 +36,9 @@ const server = new ApolloServer({
 
     if (req.headers.authorization) {
       user = await TokenDecode(req.headers.authorization);
-      if (user) {
-        return {
-          user,
-        };
-      }
+      return {
+        user,
+      };
     }
   },
   formatError(e) {
@@ -57,11 +61,14 @@ const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
 mongoose
-  .connect("mongodb+srv://max:Starwars123@cluster0.bry1v.mongodb.net/test", {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(
+    `mongodb+srv://${MONGODB_USER}:${MONGODB_PASS}@cluster0.bry1v.mongodb.net/test`,
+    {
+      useCreateIndex: true,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
   .then((res) => {
     httpServer.listen(PORT, () => {
       console.log(
@@ -73,16 +80,19 @@ mongoose
     });
   })
   .catch((e) => console.log("can't connect to db"));
+
+// drop collection
 // try {
-//   if (mongoose.connection.db.listCollections() != undefined) {
-//     mongoose.connection.db.listCollections().toArray((err: Error, names) => {
-//       names.map((item) => {
-//         mongoose.connection.db.dropCollection(item, (err, result) => {
-//           console.log("Collection droped");
-//         });
-//       });
+//   const db = mongoose.connection;
+//   db.once("open", function () {
+//     db.dropCollection("rooms", (err) => {
+//       if (err) {
+//         console.log("error delete collection");
+//       } else {
+//         console.log("delete collection success");
+//       }
 //     });
-//   }
+//   });
 // } catch (e) {
 //   console.log(e.message);
 // }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
+import { useHistory } from "react-router-dom";
 
-import { IMatchResult, IUser, Room } from "../../../../../types/rootTypes";
+import { IGetRoom, IMatchResult, IUser } from "../../../../../types/rootTypes";
 import Buttons from "../../../Common/components/Buttons/Buttons";
 import getRoom from "../../graphql/Query/GetRoom";
 import roomSendUserChoice from "../../graphql/Mutation/RoomSendUserChoice";
@@ -16,27 +17,21 @@ interface Props {
   opponent: IUser | undefined | null;
 }
 
-interface IGetRoom {
-  getRoom: Room & { error: [string] };
-}
-
 // /room/:id
 const RoomView = ({ id, opponent }: Props) => {
   const [userChoice, setUserChoice] = useState<number | null>();
   const [enemy, setEnemy] = useState<IUser | undefined | null>(opponent);
-  const [matchResult, setMatchResult] = useState<IMatchResult>();
+  const [matchResult, setMatchResult] = useState<IMatchResult | null>();
   const [opponentChoice, setOpponentChoice] = useState();
+  const history = useHistory();
   const [roomSendUserOption] = useMutation(roomSendUserChoice);
   const { data, loading } = useQuery<IGetRoom>(getRoom, {
     variables: {
       id,
     },
   });
-
   useEffect(() => {
     setEnemy(opponent);
-  }, [opponent]);
-  useEffect(() => {
     // find opponent
     let user = data?.getRoom?.users?.find(
       (item) => item.user !== localStorage.getItem("id")
@@ -52,17 +47,17 @@ const RoomView = ({ id, opponent }: Props) => {
       .subscribe(({ data }) => {
         console.log("result of battle:", data);
         setMatchResult(data.roomGetMatchResult.result);
+        setTimeout(() => {
+          setMatchResult(null);
+        }, 2000);
         setOpponentChoice(data.roomGetMatchResult.opponent);
       });
 
-    return () => {
-      matchResult.unsubscribe();
-    };
+    return () => matchResult.unsubscribe();
   });
 
   useEffect(() => {
     if (userChoice !== undefined) {
-      // console.log(id, userChoice);
       roomSendUserOption({
         variables: {
           result: userChoice,
@@ -72,7 +67,10 @@ const RoomView = ({ id, opponent }: Props) => {
     }
   }, [userChoice, setUserChoice, roomSendUserOption, id]);
 
-  if (!loading && data && data.getRoom.error) {
+  // error handling
+  // console.log(data);
+  if (!loading && data?.getRoom?.errors) {
+    console.log(data.getRoom.errors);
     return <div className="room-error">Can't get this room</div>;
   }
 
@@ -91,9 +89,18 @@ const RoomView = ({ id, opponent }: Props) => {
         ></GameResult>
       )}
       <Buttons
-        initialResult={enemy?.nickname}
+        initialResult={enemy?.nickname && !matchResult}
         setUserChoice={setUserChoice}
+        error={null}
       ></Buttons>
+      <div
+        onClick={() => {
+          history.push("/rooms");
+        }}
+        className="room-leave"
+      >
+        leave
+      </div>
     </section>
   );
 };

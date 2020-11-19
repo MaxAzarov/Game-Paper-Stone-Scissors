@@ -36,13 +36,13 @@ const Rooms = ({ match }: RouteComponentProps<Props>) => {
       });
 
     return () => {
-      userJoin.unsubscribe();
-      userLeave.unsubscribe();
       RoomUpdate({
         variables: {
           id: match.params.id,
         },
       });
+      userJoin.unsubscribe();
+      userLeave.unsubscribe();
     };
   }, [RoomUpdate, match.params.id]);
 

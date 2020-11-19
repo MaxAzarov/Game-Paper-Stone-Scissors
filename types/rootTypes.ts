@@ -21,6 +21,11 @@ export interface IUser {
   nickname: string;
 }
 
+export interface Response {
+  status: string;
+  errors: [string];
+}
+
 export interface Room {
   id: string;
   users: [{ user: string; nickname: string }];
@@ -29,6 +34,7 @@ export interface Room {
   createdAt: string;
   updatedAt: string;
 }
+
 export interface IGetRoom {
-  getRoom: Room & { error: [string] };
+  getRoom: Room & { errors: string };
 }

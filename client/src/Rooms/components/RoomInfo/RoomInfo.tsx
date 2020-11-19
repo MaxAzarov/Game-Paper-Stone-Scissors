@@ -6,7 +6,7 @@ import "./RoomInfo.scss";
 interface Props {
   date?: Date;
   enemy: IUser | null | undefined;
-  data?: IGetRoom;
+  data?: IGetRoom | undefined;
   result?: IMatchResult;
 }
 
@@ -25,7 +25,11 @@ const RoomInfo = ({ data, date, enemy, result }: Props) => {
       <p className="room-opponent">
         opponent: {enemy?.nickname || "waiting..."}
       </p>
-      {!enemy?.nickname && <p>Please wait for new user to start game...</p>}
+      {!enemy?.nickname && (
+        <p className="room-waiting">
+          Please wait for new user to start game...
+        </p>
+      )}
     </>
   );
 };

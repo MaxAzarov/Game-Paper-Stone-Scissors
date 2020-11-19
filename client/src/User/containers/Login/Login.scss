@@ -1,21 +1,20 @@
 .login-wrapper {
   display: flex;
   flex-direction: column;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
+  align-items: center;
+  justify-content: center;
+  height: 90vh;
   .login {
-    &-title {
-      text-transform: uppercase;
-      text-align: center;
-    }
+    display: flex;
+    flex-direction: column;
     border-radius: 20px;
     padding: 30px;
     border: 1px solid black;
-    display: flex;
-    flex-direction: column;
+    &-title {
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 5px;
+    }
     &-row {
       label {
         margin-right: 5px;
@@ -23,6 +22,21 @@
       display: flex;
       margin-bottom: 5px;
       justify-content: space-between;
+    }
+    button {
+      margin: 5px 0;
+      text-transform: uppercase;
+    }
+    &-register {
+      text-decoration: none;
+      span {
+        color: #000;
+        text-decoration: none !important;
+      }
+    }
+    &-error {
+      color: red;
+      text-align: center;
     }
   }
 }

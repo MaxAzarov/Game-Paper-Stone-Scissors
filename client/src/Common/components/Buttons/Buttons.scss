@@ -1,17 +1,31 @@
-.game-buttons {
+.game {
+  display: flex;
+  flex-direction: column;
   position: absolute;
   left: 50%;
   bottom: 20px;
   transform: translateX(-50%);
-  display: flex;
-  button {
-    height: 30px;
-    margin-right: 5px;
-    padding: 10px;
+  &-buttons {
     display: flex;
-    align-items: center;
-    &:last-child {
-      margin-right: 0;
+    button {
+      margin-right: 5px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      flex: 0 0 88px;
+      align-items: center;
+      &:last-child {
+        margin-right: 0;
+      }
     }
+  }
+
+  &-error {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    color: red;
+    font-family: "Arial", sans-serif;
   }
 }

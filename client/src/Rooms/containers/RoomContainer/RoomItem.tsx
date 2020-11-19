@@ -37,8 +37,11 @@ const RoomItem = ({ roomId, index, item, roomPassword, setRoomId }: Props) => {
         }).catch((e) => console.log(e));
         setRoomId(item.id);
       }}
+      onMouseEnter={() => {}}
     >
-      <p>{item.name}</p>
+      <p className="room-item__name">
+        Room name: &nbsp;<span>{item.name}</span>
+      </p>
       <p>
         users:
         {item.users.map((item, index) => {

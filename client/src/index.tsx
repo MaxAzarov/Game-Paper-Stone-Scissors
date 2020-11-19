@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
 import { setContext } from "@apollo/client/link/context";
-import { Provider } from "react-redux";
 import {
   ApolloClient,
   createHttpLink,
@@ -15,7 +14,6 @@ import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { WebSocketLink } from "@apollo/client/link/ws";
 
-import { store } from "./redux/reducers/rootReducer";
 import * as serviceWorker from "./serviceWorker";
 import App from "./App";
 
@@ -77,13 +75,11 @@ export const client = new ApolloClient({
 
 ReactDOM.render(
   <ApolloProvider client={client}>
-    <Provider store={store}>
-      <BrowserRouter>
-        <React.StrictMode>
-          <App />
-        </React.StrictMode>
-      </BrowserRouter>
-    </Provider>
+    <BrowserRouter>
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    </BrowserRouter>
   </ApolloProvider>,
   document.getElementById("root")
 );

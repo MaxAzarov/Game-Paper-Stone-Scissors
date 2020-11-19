@@ -1,58 +1,12 @@
 .single-game {
   display: flex;
-  // position: relative;
-  // justify-content: center;
-  // width: 100vw;
-  // min-height: 100vh;
-  // background-color: red;
-  // &__wrapper {
-  //   display: flex;
-  // }
-  // display: flex;
-  // .paper {
-  //   position: absolute;
-  //   left: 0;
-  //   top: 50%;
-  //   transform: translateY(-50%);
-  // }
-
-  // .match-result {
-  //   position: absolute;
-  //   top: 50%;
-  //   left: 50%;
-  //   transform: translate(-50%, -50%);
-  // }
-
-  // .scissors,
-  // .stone {
-  //   position: absolute;
-  //   left: 0;
-  //   top: 50%;
-  //   transform: scaleX(-1) translateY(-50%);
-  // }
-
-  // .paper-reverse {
-  //   position: absolute;
-  //   right: 0;
-  //   top: 50%;
-  //   -webkit-transform: scaleX(-1);
-  //   transform: scaleX(-1) translateY(-50%);
-  // }
-
-  // .scissors-reverse,
-  // .stone-reverse {
-  //   position: absolute;
-  //   right: 0;
-  //   top: 50%;
-  //   transform: translateY(-50%);
-  // }
-  // }
-  &__error {
+  &__info {
     position: absolute;
-    bottom: 60px;
-    left: 50%;
-    transform: translate(-50%, 50%);
-    color: red;
-    font-family: "Arial", sans-serif;
+    top: 10px;
+    left: 10px;
+    color: #000;
+  }
+  &__link {
+    color: #000;
   }
 }

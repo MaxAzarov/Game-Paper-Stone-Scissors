@@ -14,21 +14,18 @@ const GameLogic = (random: number, userChoice: number): IMatchResult => {
     ((random as number) === Match.Scissors && userChoice === Match.Paper) ||
     ((random as number) === Match.Paper && userChoice === Match.Stone)
   ) {
-    console.log("random win!");
     return "Defeat";
   } else if (
     ((random as number) === Match.Scissors && userChoice === Match.Stone) ||
     ((random as number) === Match.Paper && userChoice === Match.Scissors) ||
     ((random as number) === Match.Stone && userChoice === Match.Paper)
   ) {
-    console.log("you win");
     return "Win";
   } else if (
     userChoice !== undefined &&
     random !== undefined &&
     userChoice === random
   ) {
-    console.log("draw!");
     return "Draw";
   }
   return "Defeat";

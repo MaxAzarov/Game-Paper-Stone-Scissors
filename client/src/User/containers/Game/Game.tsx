@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
+import { Link } from "react-router-dom";
 
 import sendMatchRes from "../../graphql/Mutation/SendUserMatchResult";
 import UserStatistics from "../../components/UserStatistics/UserStatistics";
 import getUserMatchResult from "../../graphql/Query/GetUserMatchResult";
-import { IMatchResult, UserStats } from "./../../../../../types/rootTypes";
-import Statistics from "../../components/Statistics/Statistics";
-import getUsersStatistics from "../../graphql/Query/GetUsersStatistics";
+import { IMatchResult } from "./../../../../../types/rootTypes";
 import Buttons from "../../../Common/components/Buttons/Buttons";
 import GameLogic from "../../utilities/GameLogic";
 import GameResult from "../../../Common/components/GameResult/GameResult";
-import GameError from "../../../Common/components/GameError/GameError";
+import Info from "../../../Common/components/Info/Info";
 import "./Game.scss";
-
-interface IUserStatistics {
-  getUsersStatistics: {
-    data: [UserStats];
-  };
-}
 
 const Game = () => {
   const [userChoice, setUserChoice] = useState<number | null>();
@@ -30,16 +23,12 @@ const Game = () => {
     error: MatchResultError,
     refetch,
   } = useQuery(getUserMatchResult);
-  const { data: stats, refetch: UserStatisticsRefetch } = useQuery<
-    IUserStatistics
-  >(getUsersStatistics);
 
   useEffect(() => {
     if (data) {
-      UserStatisticsRefetch().catch((e) => console.log("user statistics"));
       refetch().catch((e) => console.log("users statistics"));
     }
-  }, [data, refetch, UserStatisticsRefetch]);
+  }, [data, refetch]);
 
   useEffect(() => {
     if (userChoice !== undefined && userChoice !== null) {
@@ -63,30 +52,28 @@ const Game = () => {
 
   return (
     <section className="single-game">
-      {/* <div className="single-game__wrapper"> */}
-      {stats && (
-        <Statistics
-          getUsersStatistics={stats.getUsersStatistics.data}
-        ></Statistics>
-      )}
+      <div className="single-game__info">
+        <p>Your nickname: {localStorage.getItem("nickname")}</p>
+        <Link to="statistics" className="single-game__link">
+          <p>Best users</p>
+        </Link>
+      </div>
       <GameResult
         choice={choice}
         random={random}
         matchResult={matchResult}
       ></GameResult>
-      {(!initialUserResult || error || MatchResultError) && (
-        <GameError></GameError>
-      )}
       <Buttons
         setUserChoice={setUserChoice}
         initialResult={initialUserResult}
+        error={error || MatchResultError}
       ></Buttons>
+      <Info></Info>
       {initialUserResult && (
         <UserStatistics
           statistics={initialUserResult.getUserMatchResult}
         ></UserStatistics>
       )}
-      {/* </div> */}
     </section>
   );
 };

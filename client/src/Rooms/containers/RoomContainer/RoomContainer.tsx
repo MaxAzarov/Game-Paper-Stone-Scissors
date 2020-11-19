@@ -5,9 +5,9 @@ import { Link } from "react-router-dom";
 import { client } from "../../../index";
 import getRooms from "../../graphql/Query/GetRooms";
 import roomCreated from "../../graphql/Subscription/RoomCreated";
-import RoomItem from "./RoomItem";
 import { Room } from "../../../../../types/rootTypes";
 import roomLastUserLeave from "../../graphql/Subscription/RoomLastUserLeave";
+import RoomItem from "./RoomItem";
 import "./RoomContainer.scss";
 
 interface IRooms {
@@ -27,7 +27,6 @@ const RoomsView: React.FC = () => {
   const { data, error } = useQuery<IRooms, string>(getRooms, {
     fetchPolicy: "network-only",
   });
-  // console.log(data);
   console.log(error && error.message);
   useEffect(() => {
     if (data) {
@@ -63,30 +62,46 @@ const RoomsView: React.FC = () => {
     };
   });
   return (
-    <section className="room">
-      <div className="room-wrapper">
-        {rooms &&
-          rooms.map((item, index) => (
-            <RoomItem
-              roomId={roomId}
-              index={index}
-              item={item}
-              roomPassword={roomPassword}
-              setRoomId={setRoomId}
-            ></RoomItem>
-          ))}
-      </div>
-      <input
-        type="password"
-        value={roomPassword}
-        className="room-password"
-        placeholder="enter room password"
-        onChange={(e) => setRoomPassword(e.target.value)}
+    // private and public rooms
+    <section className="rooms">
+      <p className="rooms-link">
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <span>Home page</span>
+        </Link>
+      </p>
+      <section className="rooms-wrapper">
+        <div className="rooms-container">
+          {rooms &&
+            rooms.map((item, index) => (
+              <RoomItem
+                roomId={roomId}
+                index={index}
+                item={item}
+                roomPassword={roomPassword}
+                setRoomId={setRoomId}
+              ></RoomItem>
+            ))}
+          {rooms.length === 0 && <p className="">No available rooms</p>}
+        </div>
+        <input
+          type="password"
+          value={roomPassword}
+          className="rooms-password"
+          placeholder="enter room password"
+          onChange={(e) => setRoomPassword(e.target.value)}
+        />
+        <p className="rooms-label">or</p>
+        <button className="rooms-create">
+          <Link to="/room-create" style={{ textDecoration: "none" }}>
+            <span>Create room</span>
+          </Link>
+        </button>
+      </section>
+      <img
+        src={require("./../../../Common/components/Home/logo2.png")}
+        alt="data"
+        className=""
       />
-
-      <Link to="/room-create" className="room-create">
-        <p>Create room</p>
-      </Link>
     </section>
   );
 };

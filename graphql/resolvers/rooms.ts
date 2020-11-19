@@ -13,7 +13,6 @@ const ROOM_DELETE = "ROOM_DELETE";
 const ROOM_USER_LEAVE = "ROOM_USER_LEAVE";
 const ROOM_RESULT_SEND = "ROOM_RESULT_SEND";
 const pubsub = new PubSub();
-
 interface Result {
   id: string;
   match: IMatchResult;
@@ -237,13 +236,13 @@ const resolvers = {
     },
     roomUserLeave: {
       subscribe: () => pubsub.asyncIterator([ROOM_USER_LEAVE]),
-      resolve: (payload: any) => {
-        // id of leaving user
-        return payload;
-      },
+      // resolve: (payload: any) => {
+      // id of leaving user
+      // return payload;
+      // },
     },
     roomGetMatchResult: {
-      subscribe: () => pubsub.asyncIterator([ROOM_RESULT_SEND]),
+      subscribe: () => pubsub.asyncIterator(ROOM_RESULT_SEND),
       resolve: (payload: Array<Result>, args: any, context: any) => {
         for (let i = 0; i < payload.length; i++) {
           if (context.user.id == payload[i].id) {

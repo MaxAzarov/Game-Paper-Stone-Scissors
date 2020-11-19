@@ -1,9 +1,9 @@
 .registration-wrapper {
   display: flex;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 90vh;
   .registration {
     border-radius: 20px;
     padding: 30px;

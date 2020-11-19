@@ -1,0 +1,16 @@
+.game-info {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  &__wrapper {
+    position: relative;
+  }
+  .info {
+    position: absolute;
+    top: -150px;
+    width: 300px;
+    border: 1px solid black;
+    padding: 10px;
+    border-radius: 20px;
+  }
+}

@@ -3,7 +3,6 @@ import { Route, Redirect } from "react-router-dom";
 
 interface Props {
   component: React.ComponentType<any>;
-  // component: any;
   path: any;
   exact: any;
 }

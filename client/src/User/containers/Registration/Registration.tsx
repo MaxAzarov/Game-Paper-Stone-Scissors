@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
 
-import "./Registration.scss";
 import { UserRegister } from "../../graphql/Mutation/UserRegister";
+import { Response } from "../../../../../types/rootTypes";
+import "./Registration.scss";
 
 interface IUserRegister {
-  UserRegister: {
-    status: string;
-    errors: [string];
-  };
+  UserRegister: Response;
 }
 interface IUserRegistersVariables {
   email: string;
@@ -31,13 +29,13 @@ const Registration: React.FC = () => {
   if (data && data.UserRegister.status) {
     history.push("/login");
   }
-
-  // #TODO display errors
-  if (data && data.UserRegister.errors) {
-    console.log(data.UserRegister.errors);
-  }
   return (
     <section className="registration-wrapper">
+      {data?.UserRegister?.errors}
+      <img
+        src={require("./../../../Common/components/Home/logo2.png")}
+        alt=""
+      />
       <div className="registration">
         <div className="registration-row">
           <label htmlFor="email">Email:</label>
