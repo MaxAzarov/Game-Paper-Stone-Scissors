@@ -8,13 +8,12 @@ import "./RoomItem.scss";
 
 interface Props {
   roomId: string;
-  index: number;
   item: Room;
   roomPassword: string;
   setRoomId: (val: string) => void;
 }
 
-const RoomItem = ({ roomId, index, item, roomPassword, setRoomId }: Props) => {
+const RoomItem = ({ roomId, item, roomPassword, setRoomId }: Props) => {
   const [RoomJoin, { data: roomJoinResp }] = useMutation(roomJoin);
   const history = useHistory();
 
@@ -26,8 +25,8 @@ const RoomItem = ({ roomId, index, item, roomPassword, setRoomId }: Props) => {
   }, [roomJoinResp, history, roomId]);
   return (
     <div
-      key={index}
       className="room-item"
+      // key={Math.random()}
       onClick={() => {
         RoomJoin({
           variables: {
@@ -37,7 +36,6 @@ const RoomItem = ({ roomId, index, item, roomPassword, setRoomId }: Props) => {
         }).catch((e) => console.log(e));
         setRoomId(item.id);
       }}
-      onMouseEnter={() => {}}
     >
       <p className="room-item__name">
         Room name: &nbsp;<span>{item.name}</span>
@@ -48,7 +46,11 @@ const RoomItem = ({ roomId, index, item, roomPassword, setRoomId }: Props) => {
           return <span key={index}>{item.nickname}</span>;
         })}
       </p>
+      {item.private && (
+        <img src={require("./lock.png")} className="room-lock" alt="lock" />
+      )}
     </div>
   );
 };
+
 export default RoomItem;

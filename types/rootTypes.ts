@@ -33,6 +33,7 @@ export interface Room {
   password: string;
   createdAt: string;
   updatedAt: string;
+  private: boolean;
 }
 
 export interface IGetRoom {

@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import { PubSub } from "apollo-server-express";
+import { RedisPubSub } from "graphql-redis-subscriptions";
+// import { PubSub } from "apollo-server-express";
 
 import User, { IUser } from "../../models/User";
 import Room, { IRoom } from "./../../models/Room";
@@ -12,7 +13,16 @@ const USER_JOIN = "USER_JOIN";
 const ROOM_DELETE = "ROOM_DELETE";
 const ROOM_USER_LEAVE = "ROOM_USER_LEAVE";
 const ROOM_RESULT_SEND = "ROOM_RESULT_SEND";
-const pubsub = new PubSub();
+
+const pubsub = new RedisPubSub({
+  connection: {
+    host: "127.0.0.1",
+    port: 6379,
+    retry_strategy: (options: any) => Math.max(options.attempt * 100, 3000),
+  },
+});
+// const pubsub = new PubSub();
+// (pubsub as any).ee.setMaxListeners(Infinity);
 interface Result {
   id: string;
   match: IMatchResult;
@@ -36,6 +46,7 @@ const resolvers = {
             name: room.name,
             createdAt: room.createdAt,
             updatedAt: room.updatedAt,
+            private: room.private,
           };
         } else {
           return {
@@ -55,30 +66,35 @@ const resolvers = {
       { name, password }: { name: string; password: string },
       context: any
     ) {
-      if (name && password) {
-        // check if this room exists
-        const candidateRoom = await Room.findOne({ name });
-        if (candidateRoom) {
-          return {
-            errors: [
-              "Room with this name exists!",
-              "Enter new name and password to create new room",
-            ],
-          };
-        }
+      // check if this room exists
+      const candidateRoom = await Room.findOne({ name });
+      if (candidateRoom) {
+        return {
+          errors: [
+            "Room with this name exists!",
+            "Enter new name and password to create new room",
+          ],
+        };
+      }
+      const user = await User.findOne({ _id: context.user.id });
+
+      // if this room is private
+      if (password.length > 0) {
         const _id = new mongoose.Types.ObjectId();
         const hashedPassword = await bcrypt.hash(password, 10);
         const newRoom = {
           name,
           password: hashedPassword,
           _id,
+          private: true,
         };
         const room = new Room(newRoom);
-        const user = await User.findOne({ _id: context.user.id });
+
         room.users.push({
           user: context.user.id,
           nickname: user?.nickname as string,
         });
+
         await room.save();
         pubsub.publish(ROOM_CREATE, room);
         return {
@@ -88,15 +104,35 @@ const resolvers = {
           password,
           createdAt: room.createdAt,
           updatedAt: room.updatedAt,
-        };
-      } else {
-        return {
-          errors: ["Enter name and password"],
+          private: true,
         };
       }
+
+      const _id = new mongoose.Types.ObjectId();
+      const newRoom = {
+        name,
+        _id,
+        private: false,
+      };
+      const room = new Room(newRoom);
+      room.users.push({
+        user: context.user.id,
+        nickname: user?.nickname as string,
+      });
+      await room.save();
+      pubsub.publish(ROOM_CREATE, room);
+      return {
+        id: _id,
+        users: [...room.users],
+        name,
+        createdAt: room.createdAt,
+        updatedAt: room.updatedAt,
+        private: false,
+      };
     },
     // roomUpdate видалення кімнати
     roomUpdate: async function (_: any, { id }: { id: string }, context: any) {
+      console.log(id);
       const room: IRoom | null = await Room.findOne({ _id: id });
       if (room) {
         // 1 user in room
@@ -104,11 +140,12 @@ const resolvers = {
           await Room.deleteOne({ _id: id });
           // send id to delete in react
           pubsub.publish(ROOM_DELETE, { id });
-        } else if (room) {
+        } else {
           // 2+ users in room
           room.users = [
             ...room.users.filter((item) => item.user != context.user.id),
           ];
+          room.usersGame = [];
           // send id of user
           await room.save();
           pubsub.publish(ROOM_USER_LEAVE, context.user.id);
@@ -130,7 +167,7 @@ const resolvers = {
       const room: IRoom | null = await Room.findOne({ _id: id });
       const user = await User.findOne({ _id: context.user.id });
 
-      if (room && user) {
+      if (room && user && id && password) {
         if (room.users.length > 2) {
           return {
             error: ["Too many users in room..."],
@@ -155,6 +192,27 @@ const resolvers = {
         }
         return {
           error: ["Can\t join to this room :("],
+        };
+      }
+
+      if (room && user && !password) {
+        if (room.users.length > 2) {
+          return {
+            error: ["Too many users in room..."],
+          };
+        }
+        room.users.push({
+          user: context.user.id,
+          nickname: user?.nickname,
+        });
+        await room.save();
+        // subscription
+        pubsub.publish(USER_JOIN, {
+          id: context.user.id,
+          nickname: user.nickname,
+        });
+        return {
+          status: "ok",
         };
       }
     },
@@ -235,11 +293,11 @@ const resolvers = {
       },
     },
     roomUserLeave: {
-      subscribe: () => pubsub.asyncIterator([ROOM_USER_LEAVE]),
-      // resolve: (payload: any) => {
       // id of leaving user
-      // return payload;
-      // },
+      subscribe: () => pubsub.asyncIterator([ROOM_USER_LEAVE]),
+      resolve: (payload: any) => {
+        return payload;
+      },
     },
     roomGetMatchResult: {
       subscribe: () => pubsub.asyncIterator(ROOM_RESULT_SEND),

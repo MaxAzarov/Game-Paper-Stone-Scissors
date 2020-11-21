@@ -1,17 +1,15 @@
 import React from "react";
 
-import { IGetRoom, IMatchResult, IUser } from "../../../../../types/rootTypes";
+import { IGetRoom, IUser } from "../../../../../types/rootTypes";
 import "./RoomInfo.scss";
 
 interface Props {
   date?: Date;
   enemy: IUser | null | undefined;
   data?: IGetRoom | undefined;
-  result?: IMatchResult;
 }
 
-const RoomInfo = ({ data, date, enemy, result }: Props) => {
-  console.log(result);
+const RoomInfo = ({ data, date, enemy }: Props) => {
   return (
     <>
       <div className="room-info">

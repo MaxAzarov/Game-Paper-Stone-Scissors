@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import sendMatchRes from "../../graphql/Mutation/SendUserMatchResult";
 import UserStatistics from "../../components/UserStatistics/UserStatistics";
@@ -10,6 +10,7 @@ import Buttons from "../../../Common/components/Buttons/Buttons";
 import GameLogic from "../../utilities/GameLogic";
 import GameResult from "../../../Common/components/GameResult/GameResult";
 import Info from "../../../Common/components/Info/Info";
+import Error from "./../../../Common/components/Error/Error";
 import "./Game.scss";
 
 const Game = () => {
@@ -24,31 +25,41 @@ const Game = () => {
     refetch,
   } = useQuery(getUserMatchResult);
 
+  const history = useHistory();
   useEffect(() => {
     if (data) {
-      refetch().catch((e) => console.log("users statistics"));
+      refetch().catch((e) => {
+        history.push("/login");
+      });
     }
-  }, [data, refetch]);
+  }, [data, refetch, history]);
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
     if (userChoice !== undefined && userChoice !== null) {
       let MatchResult: IMatchResult;
       let rand = Math.floor(Math.random() * 3);
       setRandom(rand);
       MatchResult = GameLogic(rand, userChoice as number);
-      console.log("random:", random);
-      console.log("user:", userChoice);
-      console.log("result", MatchResult);
       setChoice(userChoice);
       setMatchResult(MatchResult);
       sendMatchResult({
         variables: {
           result: MatchResult,
         },
+      }).catch((e) => {
+        history.push("/login");
       });
+
+      timeout = setTimeout(() => {
+        setMatchResult(undefined);
+      }, 2000);
       setUserChoice(undefined);
     }
-  }, [userChoice, setUserChoice, sendMatchResult, random]);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [userChoice, setUserChoice, sendMatchResult, random, history]);
 
   return (
     <section className="single-game">
@@ -58,17 +69,21 @@ const Game = () => {
           <p>Best users</p>
         </Link>
       </div>
-      <GameResult
-        choice={choice}
-        random={random}
-        matchResult={matchResult}
-      ></GameResult>
+      {matchResult && (
+        <GameResult
+          choice={choice}
+          random={random}
+          matchResult={matchResult}
+        ></GameResult>
+      )}
+      {error && <Error error={error?.message}></Error>}
+      {MatchResultError && <Error error={MatchResultError?.message}></Error>}
       <Buttons
         setUserChoice={setUserChoice}
         initialResult={initialUserResult}
-        error={error || MatchResultError}
+        // error={error || MatchResultError}
       ></Buttons>
-      <Info></Info>
+      <Info />
       {initialUserResult && (
         <UserStatistics
           statistics={initialUserResult.getUserMatchResult}

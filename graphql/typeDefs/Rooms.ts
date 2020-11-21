@@ -24,6 +24,7 @@ const typeDefs = gql`
     createdAt: String
     updatedAt: String
     errors: [String!]
+    private: Boolean
   }
   type Rooms {
     rooms: [GetRoomResponse]
@@ -32,7 +33,7 @@ const typeDefs = gql`
   extend type Mutation {
     roomCreate(name: String!, password: String!): GetRoomResponse @auth
     roomUpdate(id: String!): Response @auth
-    roomJoin(id: String!, password: String!): Response @auth
+    roomJoin(id: String!, password: String): Response @auth
     roomSendUserChoice(roomId: String!, result: Int!): Response @auth
   }
   extend type Query {
@@ -45,7 +46,6 @@ const typeDefs = gql`
     roomUserJoin: User
     roomLastUserLeave: String!
     roomUserLeave: String!
-    # roomGetMatchResult: MatchResult! @auth
     roomGetMatchResult: RoomUserChoiceAndResult! @auth
   }
 `;

@@ -24,14 +24,12 @@ const Rooms = ({ match }: RouteComponentProps<Props>) => {
         query: roomUserJoin,
       })
       .subscribe(({ data }) => {
-        console.log("room user onconnect", data);
         setOpponent(data.roomUserJoin);
       });
 
     const userLeave = client
       .subscribe({ query: roomUserLeave })
       .subscribe(({ data: userId }) => {
-        console.log(userId);
         setOpponent(undefined);
       });
 

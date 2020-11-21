@@ -4,7 +4,6 @@ import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import { ApolloServer } from "apollo-server-express";
-// import { EventEmitter } from "events";
 
 import resolvers from "./graphql/resolvers/rootResolver";
 import typeDefs from "./graphql/typeDefs/rootTypeDef";
@@ -12,9 +11,6 @@ import TokenDecode from "./middlewares/auth";
 import AuthDirective from "./directives/AuthDirectives";
 
 const app: Application = express();
-// const eventEmitter = new EventEmitter();
-// eventEmitter.setMaxListeners(55);
-// console.log("eventEmitter", eventEmitter);
 dotenv.config();
 const { PORT = 5000, MONGODB_USER, MONGODB_PASS } = process.env;
 const server = new ApolloServer({

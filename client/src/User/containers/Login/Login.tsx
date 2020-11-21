@@ -19,7 +19,7 @@ const Login = () => {
   const [errors, setErrors] = useState<string[] | null | undefined>(
     data?.UserLogin?.errors
   );
-  console.log(data);
+  // console.log(data);
   const history = useHistory();
   if (data?.UserLogin.id && data?.UserLogin.token && data?.UserLogin.nickname) {
     localStorage.setItem("token", data.UserLogin.token);

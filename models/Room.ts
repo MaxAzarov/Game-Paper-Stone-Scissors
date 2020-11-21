@@ -18,6 +18,7 @@ export interface IRoom extends Document {
   createdAt: string;
   updatedAt: string;
   usersGame: IUserGame[];
+  private: boolean;
 }
 
 const RoomSchema = new Schema(
@@ -62,13 +63,17 @@ const RoomSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
       validate: {
         validator: function (password: string) {
           return password.length > 2;
         },
         message: (props) => `${props.value} has less than 2 symbols!`,
       },
+    },
+    private: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
   },
   { timestamps: true }

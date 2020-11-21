@@ -16,7 +16,6 @@
     flex-direction: column;
     p {
       text-align: center;
-      margin-bottom: 5px;
     }
   }
   .rooms-wrapper {
@@ -29,6 +28,7 @@
   }
   &-password {
     padding: 5px;
+    width: 312px;
   }
   &-create {
     margin-top: 10px;
@@ -42,7 +42,7 @@
     text-align: center;
     font-size: 20px;
   }
-  img {
+  &-logo {
     position: absolute;
     top: 5px;
     right: 5px;

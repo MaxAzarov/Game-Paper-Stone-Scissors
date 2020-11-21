@@ -12,6 +12,7 @@ const getRooms = gql`
         }
         createdAt
         updatedAt
+        private
       }
       errors
     }

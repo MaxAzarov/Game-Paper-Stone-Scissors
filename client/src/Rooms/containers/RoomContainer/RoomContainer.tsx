@@ -52,7 +52,6 @@ const RoomsView: React.FC = () => {
         query: roomLastUserLeave,
       })
       .subscribe(({ data: id }) => {
-        console.log("id of deleted room: ", id);
         setRooms([...rooms.filter((item) => item.id !== id.roomLastUserLeave)]);
       });
 
@@ -74,8 +73,8 @@ const RoomsView: React.FC = () => {
           {rooms &&
             rooms.map((item, index) => (
               <RoomItem
+                key={index}
                 roomId={roomId}
-                index={index}
                 item={item}
                 roomPassword={roomPassword}
                 setRoomId={setRoomId}
@@ -100,7 +99,7 @@ const RoomsView: React.FC = () => {
       <img
         src={require("./../../../Common/components/Home/logo2.png")}
         alt="data"
-        className=""
+        className="rooms-logo"
       />
     </section>
   );
