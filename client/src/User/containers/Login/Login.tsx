@@ -13,19 +13,18 @@ interface IUserLogin {
 }
 
 const Login = () => {
-  const [userData, setUserData] = useState<string>("");
+  const history = useHistory();
+  const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [userLogin, { data }] = useLazyQuery<IUserLogin>(UserLogin);
   const [errors, setErrors] = useState<string[] | null | undefined>(
     data?.UserLogin?.errors
   );
-  // console.log(data);
-  const history = useHistory();
   if (data?.UserLogin.id && data?.UserLogin.token && data?.UserLogin.nickname) {
     localStorage.setItem("token", data.UserLogin.token);
     localStorage.setItem("id", data.UserLogin.id);
     localStorage.setItem("nickname", data.UserLogin.nickname);
-    history.push("/game");
+    history.push("/");
   }
 
   useEffect(() => {
@@ -37,47 +36,35 @@ const Login = () => {
     }
   }, [data]);
   return (
-    <section className="login-wrapper">
-      <img
-        src={require("./../../../Common/components/Home/logo2.png")}
-        alt=""
-      />
-      <div className="login">
+    <section className="login">
+      <div className="login-wrapper">
         <p className="login-title">Login</p>
-        <div className="login-row">
-          <label htmlFor="email">Email/Nick:</label>
-          <input
-            type="text"
-            value={userData}
-            id="email"
-            onChange={(e) => setUserData(e.target.value)}
-          />
-        </div>
-        <div className="login-row">
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <img
+          src={require("./../../../Common/components/Home/logo2.png")}
+          alt=""
+        />
+        <input
+          type="text"
+          value={email}
+          id="email"
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={"Email"}
+        />
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={"Password"}
+        />
         {errors?.length &&
           errors.map((item, index) => (
             <p className="login-error" key={index}>
               {item}
             </p>
           ))}
-
         <button
-          onClick={() => {
-            userLogin({
-              variables: {
-                data: userData,
-                password,
-              },
-            });
-          }}
+          onClick={() => userLogin({ variables: { data: email, password } })}
         >
           Login!
         </button>
@@ -85,6 +72,10 @@ const Login = () => {
           Don't have an account? &nbsp;
           <Link to="/register" style={{ textDecoration: "none" }}>
             <span>Click here to register!</span>
+          </Link>
+          &nbsp;
+          <Link to="/" style={{ textDecoration: "none" }}>
+            <span>Home</span>
           </Link>
         </p>
       </div>

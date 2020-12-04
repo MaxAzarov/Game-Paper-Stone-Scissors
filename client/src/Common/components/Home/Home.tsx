@@ -1,7 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+
 import gif from "./gif.gif";
 import "./Home.scss";
+
 const Home = () => {
   return (
     <section className="home">
@@ -9,16 +11,30 @@ const Home = () => {
       <img src={gif} alt="" className="gif2" />
       <p className="home-title">Game</p>
       <img src={require("./logo2.png")} className="home-logo" alt="" />
-      <p className="home-game">
-        <Link to="/game" style={{ textDecoration: "none" }}>
-          <span>Start personal game!</span>
-        </Link>
-      </p>
-      <p className="home-room">
-        <Link to="/rooms" style={{ textDecoration: "none" }}>
-          <span>Play online</span>
-        </Link>
-      </p>
+      <Link to="/game" className="home-link" style={{ textDecoration: "none" }}>
+        <span>Start personal game!</span>
+      </Link>
+      <Link
+        to="/rooms"
+        className="home-link"
+        style={{ textDecoration: "none" }}
+      >
+        <span>Play online</span>
+      </Link>
+      <Link
+        to="/login"
+        className="home-link"
+        style={{ textDecoration: "none" }}
+      >
+        <span>Register</span>
+      </Link>
+      <Link
+        to="/login"
+        className="home-link"
+        style={{ textDecoration: "none" }}
+      >
+        <span>Login</span>
+      </Link>
     </section>
   );
 };

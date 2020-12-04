@@ -11,12 +11,10 @@ const UserStatistics: FC<Props> = ({
 }) => {
   return (
     <section className="statistics">
-      <p>Statistics: &nbsp;</p>
-      <div className="statistics-container">
-        <p>Wins:{wins}</p>
-        <p>Defeat:{defeat}</p>
-        <p>Draw:{draw}</p>
-      </div>
+      <p>Statistics:</p>
+      <p>Wins:{wins}</p>
+      <p>Defeat:{defeat}</p>
+      <p>Draw:{draw}</p>
       Percent of win:
       {percentOfWin}
     </section>

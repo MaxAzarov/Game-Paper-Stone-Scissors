@@ -19,14 +19,14 @@ const RoomItem = ({ roomId, item, roomPassword, setRoomId }: Props) => {
 
   // TODO handle err
   useEffect(() => {
-    if (roomJoinResp && !roomJoinResp.roomJoin.error) {
+    if (roomJoinResp && !roomJoinResp.roomJoin.errors) {
+      console.log(roomJoinResp);
       history.push(`/room/${roomId}`);
     }
   }, [roomJoinResp, history, roomId]);
   return (
     <div
       className="room-item"
-      // key={Math.random()}
       onClick={() => {
         RoomJoin({
           variables: {
@@ -43,7 +43,7 @@ const RoomItem = ({ roomId, item, roomPassword, setRoomId }: Props) => {
       <p>
         users:
         {item.users.map((item, index) => {
-          return <span key={index}>{item.nickname}</span>;
+          return <span key={index}>{item.nickname} &nbsp;</span>;
         })}
       </p>
       {item.private && (

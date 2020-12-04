@@ -1,16 +1,5 @@
 .rooms {
   width: 100vw;
-  &-link {
-    text-decoration: none;
-    display: inline-flex;
-    color: #000;
-    margin-top: 10px;
-    margin-left: 10px;
-    span {
-      color: #000;
-      text-decoration: none;
-    }
-  }
   &-container {
     display: flex;
     flex-direction: column;
@@ -46,5 +35,11 @@
     position: absolute;
     top: 5px;
     right: 5px;
+    @media screen and (max-width: 380px) {
+      display: none;
+    }
+  }
+  &-message {
+    margin-bottom: 10px;
   }
 }

@@ -2,9 +2,9 @@ import React from "react";
 
 import "./GameResult.scss";
 import { IMatchResult } from "../../../../../types/rootTypes";
-import paper from "./paperLeft.jpg";
-import scissors from "./scissors.jpg";
-import stone from "./stone.jpg";
+import paper from "./paper.png";
+import scissors from "./scissors.png";
+import stone from "./stone.png";
 
 interface Props {
   choice?: number | null;

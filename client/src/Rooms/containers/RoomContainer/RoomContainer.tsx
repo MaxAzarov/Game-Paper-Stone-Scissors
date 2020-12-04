@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 import { client } from "../../../index";
 import getRooms from "../../graphql/Query/GetRooms";
 import roomCreated from "../../graphql/Subscription/RoomCreated";
 import { Room } from "../../../../../types/rootTypes";
 import roomLastUserLeave from "../../graphql/Subscription/RoomLastUserLeave";
+import Menu from "../../../Common/components/Menu/Menu";
 import RoomItem from "./RoomItem";
 import "./RoomContainer.scss";
 
@@ -24,10 +25,10 @@ const RoomsView: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomPassword, setRoomPassword] = useState<string>("");
   const [roomId, setRoomId] = useState<string>("");
-  const { data, error } = useQuery<IRooms, string>(getRooms, {
+  const { data } = useQuery<IRooms, string>(getRooms, {
     fetchPolicy: "network-only",
   });
-  console.log(error && error.message);
+  const history = useHistory();
   useEffect(() => {
     if (data) {
       setRooms(data.getRooms.rooms);
@@ -61,13 +62,8 @@ const RoomsView: React.FC = () => {
     };
   });
   return (
-    // private and public rooms
     <section className="rooms">
-      <p className="rooms-link">
-        <Link to="/" style={{ textDecoration: "none" }}>
-          <span>Home page</span>
-        </Link>
-      </p>
+      <Menu />
       <section className="rooms-wrapper">
         <div className="rooms-container">
           {rooms &&
@@ -78,22 +74,25 @@ const RoomsView: React.FC = () => {
                 item={item}
                 roomPassword={roomPassword}
                 setRoomId={setRoomId}
-              ></RoomItem>
+              />
             ))}
-          {rooms.length === 0 && <p className="">No available rooms</p>}
+          {rooms.length === 0 && (
+            <p className="rooms-message">No available rooms</p>
+          )}
         </div>
         <input
           type="password"
           value={roomPassword}
           className="rooms-password"
-          placeholder="enter room password"
+          placeholder="enter room password to join room"
           onChange={(e) => setRoomPassword(e.target.value)}
         />
         <p className="rooms-label">or</p>
-        <button className="rooms-create">
-          <Link to="/room-create" style={{ textDecoration: "none" }}>
-            <span>Create room</span>
-          </Link>
+        <button
+          className="rooms-create"
+          onClick={() => history.push("/room-create")}
+        >
+          Create room
         </button>
       </section>
       <img

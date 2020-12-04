@@ -12,6 +12,7 @@ const RoomCreate = gql`
       createdAt
       updatedAt
       errors
+      private
     }
   }
 `;

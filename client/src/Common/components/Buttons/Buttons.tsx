@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// import { Link } from "react-router-dom";
 
 import { IUserGameChoice } from "../../../../../types/rootTypes";
 import "./Buttons.scss";
@@ -9,13 +8,7 @@ interface Props {
   initialResult: any;
 }
 
-//  ??? pause
-
-export default function Buttons({
-  setUserChoice,
-  initialResult,
-}: // pause
-Props) {
+export default function Buttons({ setUserChoice, initialResult }: Props) {
   const [items] = useState<Array<IUserGameChoice>>([
     "Stone",
     "Scissors",
@@ -23,15 +16,6 @@ Props) {
   ]); // 0 1 2
   return (
     <div className="game">
-      {/* {(!initialResult || error) && (
-        <p className="game-error">
-          Login to play!
-          <Link to="/login" style={{ textDecoration: "none", color: "#000" }}>
-            Click here to login
-          </Link>
-        </p>
-      )} */}
-
       <div className="game-buttons">
         {items.map((item, index) => (
           <button

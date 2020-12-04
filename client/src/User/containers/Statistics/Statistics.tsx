@@ -3,8 +3,9 @@ import { useQuery } from "@apollo/client";
 
 import { UserStats } from "../../../../../types/rootTypes";
 import getUsersStatistics from "../../graphql/Query/GetUsersStatistics";
-import "./Statistics.scss";
 import Spinner from "../../../Common/components/Spinner/Spinner";
+import "./Statistics.scss";
+import Menu from "../../../Common/components/Menu/Menu";
 
 interface IUserStatistics {
   getUsersStatistics: {
@@ -19,6 +20,7 @@ const Statistics: FC = () => {
   }
   return (
     <section className="users-statistics">
+      <Menu />
       <img
         src={require("./../../../Common/components/Home/logo2.png")}
         alt=""

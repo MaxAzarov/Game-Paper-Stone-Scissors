@@ -8,9 +8,9 @@ import Home from "./Common/components/Home/Home";
 import RoomsView from "./Rooms/containers/RoomContainer/RoomContainer";
 import RoomCreate from "./Rooms/containers/RoomCreation/RoomCreation";
 import PrivateRoute from "./Common/components/PrivateRoute/PrivateRoute";
+import Statistics from "./User/containers/Statistics/Statistics";
 import Room from "./Rooms/containers/Room/Room";
 import "./App.scss";
-import Statistics from "./User/containers/Statistics/Statistics";
 
 const App = () => {
   return (

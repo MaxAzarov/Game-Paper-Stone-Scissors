@@ -5,9 +5,9 @@ import { withRouter, RouteComponentProps } from "react-router-dom";
 import { client } from "../../..";
 import { IUser } from "../../../../../types/rootTypes";
 import roomUserJoin from "../../graphql/Subscription/RoomUserJoin";
-import RoomView from "./RoomView";
 import roomUpdate from "./../../graphql/Mutation/RoomDelete";
 import roomUserLeave from "../../graphql/Subscription/RoomUserLeave";
+import RoomView from "./RoomView";
 
 interface Props {
   id: string;
@@ -34,16 +34,16 @@ const Rooms = ({ match }: RouteComponentProps<Props>) => {
       });
 
     return () => {
+      userJoin.unsubscribe();
+      userLeave.unsubscribe();
       RoomUpdate({
         variables: {
           id: match.params.id,
         },
-      });
-      userJoin.unsubscribe();
-      userLeave.unsubscribe();
+      }).catch((e) => console.log(e));
     };
   }, [RoomUpdate, match.params.id]);
 
-  return <RoomView id={match.params.id} opponent={opponent}></RoomView>;
+  return <RoomView id={match.params.id} opponent={opponent} />;
 };
 export default withRouter(Rooms);

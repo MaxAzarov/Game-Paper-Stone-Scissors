@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 import sendMatchRes from "../../graphql/Mutation/SendUserMatchResult";
 import UserStatistics from "../../components/UserStatistics/UserStatistics";
@@ -11,6 +11,7 @@ import GameLogic from "../../utilities/GameLogic";
 import GameResult from "../../../Common/components/GameResult/GameResult";
 import Info from "../../../Common/components/Info/Info";
 import Error from "./../../../Common/components/Error/Error";
+import Menu from "../../../Common/components/Menu/Menu";
 import "./Game.scss";
 
 const Game = () => {
@@ -35,7 +36,6 @@ const Game = () => {
   }, [data, refetch, history]);
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
     if (userChoice !== undefined && userChoice !== null) {
       let MatchResult: IMatchResult;
       let rand = Math.floor(Math.random() * 3);
@@ -51,43 +51,28 @@ const Game = () => {
         history.push("/login");
       });
 
-      timeout = setTimeout(() => {
+      setTimeout(() => {
         setMatchResult(undefined);
       }, 2000);
       setUserChoice(undefined);
     }
-    return () => {
-      clearTimeout(timeout);
-    };
   }, [userChoice, setUserChoice, sendMatchResult, random, history]);
 
   return (
     <section className="single-game">
-      <div className="single-game__info">
-        <p>Your nickname: {localStorage.getItem("nickname")}</p>
-        <Link to="statistics" className="single-game__link">
-          <p>Best users</p>
-        </Link>
-      </div>
+      <Menu />
       {matchResult && (
-        <GameResult
-          choice={choice}
-          random={random}
-          matchResult={matchResult}
-        ></GameResult>
+        <GameResult choice={choice} random={random} matchResult={matchResult} />
       )}
-      {error && <Error error={error?.message}></Error>}
-      {MatchResultError && <Error error={MatchResultError?.message}></Error>}
+      {error && <Error error={error?.message} />}
+      {MatchResultError && <Error error={MatchResultError?.message} />}
       <Buttons
         setUserChoice={setUserChoice}
-        initialResult={initialUserResult}
-        // error={error || MatchResultError}
-      ></Buttons>
+        initialResult={initialUserResult && !matchResult}
+      />
       <Info />
       {initialUserResult && (
-        <UserStatistics
-          statistics={initialUserResult.getUserMatchResult}
-        ></UserStatistics>
+        <UserStatistics statistics={initialUserResult.getUserMatchResult} />
       )}
     </section>
   );

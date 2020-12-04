@@ -10,9 +10,9 @@ import roomGetMatchResult from "../../graphql/Subscription/RoomGetMatchResult";
 import GameResult from "../../../Common/components/GameResult/GameResult";
 import Info from "../../../Common/components/Info/Info";
 import RoomInfo from "../../components/RoomInfo/RoomInfo";
+import Error from "../../../Common/components/Error/Error";
 import { client } from "../../..";
 import "./RoomView.scss";
-import Error from "../../../Common/components/Error/Error";
 interface Props {
   id: string;
   opponent: IUser | undefined | null;
@@ -31,6 +31,7 @@ const RoomView = ({ id, opponent }: Props) => {
     variables: {
       id,
     },
+    fetchPolicy: "no-cache",
   });
   useEffect(() => {
     setEnemy(opponent);
@@ -74,7 +75,6 @@ const RoomView = ({ id, opponent }: Props) => {
     }
   }, [userChoice, setUserChoice, roomSendUserOption, id]);
 
-  // error handling
   if (!loading && data?.getRoom?.errors) {
     return <Error error={"Can't get this room"}></Error>;
   }

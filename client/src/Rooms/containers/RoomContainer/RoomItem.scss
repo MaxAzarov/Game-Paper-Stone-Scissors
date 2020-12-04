@@ -1,11 +1,12 @@
 .room {
   &-item {
+    height: 32px;
     display: flex;
     align-items: center;
     min-width: 300px;
     border: 1px solid black;
     justify-content: space-between;
-    padding: 5px;
+    padding: 2px;
     margin-bottom: 10px;
     &:hover {
       cursor: pointer;

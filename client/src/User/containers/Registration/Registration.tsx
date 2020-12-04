@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import { UserRegister } from "../../graphql/Mutation/UserRegister";
 import { Response } from "../../../../../types/rootTypes";
@@ -30,65 +30,63 @@ const Registration: React.FC = () => {
     history.push("/login");
   }
   return (
-    <section className="registration-wrapper">
+    <section className="registration">
       {data?.UserRegister?.errors}
-      <img
-        src={require("./../../../Common/components/Home/logo2.png")}
-        alt=""
-      />
-      <div className="registration">
-        <div className="registration-row">
-          <label htmlFor="email">Email:</label>
-          <input
-            type="text"
-            value={email}
-            id="email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        <div className="registration-row">
-          <label htmlFor="nickname">Nickname:</label>
-          <input
-            type="text"
-            id="nickname"
-            value={nickname}
-            onChange={(e) => setNickName(e.target.value)}
-          />
-        </div>
-
-        <div className="registration-row">
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-
-        <div className="registration-row">
-          <label htmlFor="repPassword">Repeat password:</label>
-          <input
-            type="password"
-            id="repPassword"
-            value={repPassword}
-            onChange={(e) => setRepPassword(e.target.value)}
-          />
-        </div>
+      <div className="registration-wrapper">
+        <div className="registration-title">Register</div>
+        <img
+          src={require("./../../../Common/components/Home/logo2.png")}
+          alt=""
+        />
+        <input
+          type="text"
+          value={email}
+          id="email"
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={"Email"}
+        />
+        <input
+          type="text"
+          id="nickname"
+          value={nickname}
+          onChange={(e) => setNickName(e.target.value)}
+          placeholder={"Nickname"}
+        />
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={"Password"}
+        />
+        <input
+          type="password"
+          id="repPassword"
+          value={repPassword}
+          onChange={(e) => setRepPassword(e.target.value)}
+          placeholder={"Repeat password"}
+        />
         <button
-          onClick={() => {
-            userRegister({
-              variables: {
-                email,
-                nickname,
-                password,
-              },
-            });
-          }}
+          onClick={() =>
+            userRegister({ variables: { email, nickname, password } })
+          }
         >
           Register!
         </button>
+        <Link
+          to="/login"
+          className="registration-link"
+          style={{ textDecoration: "none" }}
+        >
+          Have an account?
+        </Link>
+        <Link
+          to="/"
+          className="registration-link"
+          style={{ textDecoration: "none" }}
+        >
+          Home
+        </Link>
       </div>
     </section>
   );

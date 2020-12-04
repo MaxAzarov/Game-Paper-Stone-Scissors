@@ -166,16 +166,37 @@ const resolvers = {
     ) {
       const room: IRoom | null = await Room.findOne({ _id: id });
       const user = await User.findOne({ _id: context.user.id });
-
-      if (room && user && id && password) {
-        if (room.users.length > 2) {
-          return {
-            error: ["Too many users in room..."],
-          };
-        }
-        // hash password
-        const match = await bcrypt.compare(password, room.password);
-        if (match) {
+      if (room && room.users.length > 2) {
+        return {
+          errors: ["Too many users in room..."],
+        };
+      }
+      if (room && user) {
+        if (room.private) {
+          const match = await bcrypt.compare(password, room.password);
+          if (match) {
+            room.users.push({
+              user: context.user.id,
+              nickname: user?.nickname,
+            });
+            await room.save();
+            // subscription
+            pubsub.publish(USER_JOIN, {
+              id: context.user.id,
+              nickname: user.nickname,
+            });
+            return {
+              status: "ok",
+            };
+          } else {
+            return { errors: ["Can\t join to this room :("] };
+          }
+        } else {
+          if (room.users.length > 2) {
+            return {
+              errors: ["Too many users in room..."],
+            };
+          }
           room.users.push({
             user: context.user.id,
             nickname: user?.nickname,
@@ -190,30 +211,8 @@ const resolvers = {
             status: "ok",
           };
         }
-        return {
-          error: ["Can\t join to this room :("],
-        };
-      }
-
-      if (room && user && !password) {
-        if (room.users.length > 2) {
-          return {
-            error: ["Too many users in room..."],
-          };
-        }
-        room.users.push({
-          user: context.user.id,
-          nickname: user?.nickname,
-        });
-        await room.save();
-        // subscription
-        pubsub.publish(USER_JOIN, {
-          id: context.user.id,
-          nickname: user.nickname,
-        });
-        return {
-          status: "ok",
-        };
+      } else {
+        return { errors: ["Can\t join to this room :("] };
       }
     },
     // room and result
@@ -266,11 +265,13 @@ const resolvers = {
     roomCreated: {
       subscribe: () => pubsub.asyncIterator([ROOM_CREATE]),
       resolve: (payload: any) => {
+        console.log(payload.private);
         return {
           name: payload.name,
           id: payload._id,
           users: payload.users,
           createdAt: payload.createdAt,
+          private: payload.private,
         };
       },
     },

@@ -10,6 +10,7 @@ const roomCreated = gql`
         nickname
       }
       createdAt
+      private
     }
   }
 `;

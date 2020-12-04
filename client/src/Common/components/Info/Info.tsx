@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import "./Info.scss";
 
 const Info = () => {
@@ -16,7 +17,11 @@ const Info = () => {
   return (
     <div className="game-info">
       <div className="game-info__wrapper">
-        <img src={require("./infoico.png")} alt="" onClick={handleClick} />
+        <img
+          src={require("./infoico.png")}
+          alt="info-icon"
+          onClick={handleClick}
+        />
         {show && (
           <div className="info">
             A player who decides to play rock will beat another player who has

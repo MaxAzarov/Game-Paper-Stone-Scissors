@@ -9,34 +9,43 @@
     left: 50%;
     transform: translate(-50%, -50%);
   }
-  .paper {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+
+  .hide {
+    @media screen and (max-width: 810px) {
+      display: none;
+    }
   }
 
-  .scissors,
-  .stone {
+  .paper,
+  .stone,
+  .scissors {
     position: absolute;
     left: 0;
     top: 50%;
     transform: scaleX(-1) translateY(-50%);
+    @extend .hide;
   }
 
+  .paper,
+  .scissors-reverse,
+  .scissors,
+  .paper-reverse {
+    width: 500px;
+    @extend .hide;
+  }
+
+  .stone,
+  .stone-reverse {
+    width: 300px;
+  }
+
+  .scissors-reverse,
+  .stone-reverse,
   .paper-reverse {
     position: absolute;
     right: 0;
     top: 50%;
-    -webkit-transform: scaleX(-1);
-    transform: scaleX(-1) translateY(-50%);
-  }
-
-  .scissors-reverse,
-  .stone-reverse {
-    position: absolute;
-    right: 0;
-    top: 50%;
     transform: translateY(-50%);
+    @extend .hide;
   }
 }
