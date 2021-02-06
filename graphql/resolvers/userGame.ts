@@ -1,5 +1,5 @@
+import pool from "../../db";
 import { MatchResult } from "../../types/rootTypes";
-import User, { IUser } from "./../../models/User";
 
 const resolvers = {
   Mutation: {
@@ -8,23 +8,27 @@ const resolvers = {
       args: MatchResult,
       context: any
     ) {
-      const user: IUser | null = await User.findById(context.user.id);
-      if (user) {
+      try {
         if (args.result == "Win") {
-          user.wins += 1;
+          await pool.query(
+            `update user_account set wins = wins + 1 where user_id = $1`,
+            [context.user.id]
+          );
         } else if (args.result == "Draw") {
-          user.draw += 1;
+          await pool.query(
+            `update user_account set draw = draw + 1 where user_id = $1`,
+            [context.user.id]
+          );
         } else if (args.result == "Defeat") {
-          user.defeat += 1;
+          await pool.query(
+            `update user_account set defeat = defeat + 1 where user_id = $1`,
+            [context.user.id]
+          );
         }
-        user.percentOfWin = +parseFloat(
-          ((user.wins / (user.wins + user.defeat + user.draw)) * 100).toString()
-        ).toFixed(2);
-        await user.save();
         return {
           status: "ok",
         };
-      } else {
+      } catch (e) {
         return {
           errors: ["Invalid user!"],
         };
@@ -33,13 +37,26 @@ const resolvers = {
   },
   Query: {
     getUserMatchResult: async function (_: any, __: any, context: any) {
-      const user = await User.findById(context.user.id);
-      if (user) {
+      const user = await pool.query(
+        `select wins,defeat,draw from user_account where user_id = $1`,
+        [context.user.id]
+      );
+
+      const percentOfWin =
+        +parseFloat(
+          (
+            (user.rows[0].wins /
+              (user.rows[0].wins + user.rows[0].defeat + user.rows[0].draw)) *
+            100
+          ).toString()
+        ).toFixed(2) || 0;
+
+      if (user.rows[0]) {
         return {
-          wins: user.wins,
-          defeat: user.defeat,
-          draw: user.draw,
-          percentOfWin: user.percentOfWin,
+          wins: user.rows[0].wins,
+          defeat: user.rows[0].defeat,
+          draw: user.rows[0].draw,
+          percentOfWin,
         };
       } else {
         return {
@@ -48,16 +65,34 @@ const resolvers = {
       }
     },
     getUsersStatistics: async function () {
-      const users = await User.find({})
-        .select("nickname percentOfWin -_id")
-        .sort({ percentOfWin: -1 });
-      if (!users) {
+      const users = await pool.query(
+        `select nickname, wins, defeat, draw from user_account`
+      );
+      if (!users.rows) {
         return {
           errors: ["Can't get statistics of users"],
         };
       }
+
+      interface IUsers {
+        nickname: string;
+        percentOfWin: number;
+      }
+
+      const normalizedUsers: IUsers[] = [];
+
+      users.rows.map((item) => {
+        const percentOfWin =
+          +parseFloat(
+            (
+              (item.wins / (item.wins + item.defeat + item.draw)) *
+              100
+            ).toString()
+          ).toFixed(2) || 0;
+        normalizedUsers.push({ nickname: item.nickname, percentOfWin });
+      });
       return {
-        data: [...users],
+        data: [...normalizedUsers],
       };
     },
   },

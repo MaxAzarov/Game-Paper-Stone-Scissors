@@ -24,10 +24,13 @@ const RoomItem = ({ roomId, item, roomPassword, setRoomId }: Props) => {
       history.push(`/room/${roomId}`);
     }
   }, [roomJoinResp, history, roomId]);
+
+  console.log(item);
   return (
     <div
       className="room-item"
       onClick={() => {
+        console.log(item.id, roomPassword);
         RoomJoin({
           variables: {
             id: item.id,

@@ -1,12 +1,10 @@
 import bcrypt from "bcryptjs";
-import mongoose from "mongoose";
 import { RedisPubSub } from "graphql-redis-subscriptions";
 // import { PubSub } from "apollo-server-express";
 
-import User, { IUser } from "../../models/User";
-import Room, { IRoom } from "./../../models/Room";
 import GameLogic from "../../client/src/User/utilities/GameLogic";
 import { IMatchResult } from "../../types/rootTypes";
+import pool from "../../db";
 
 const ROOM_CREATE = "ROOM_CREATE";
 const USER_JOIN = "USER_JOIN";
@@ -28,25 +26,91 @@ interface Result {
   match: IMatchResult;
   opponent: number;
 }
+
+interface Room {
+  room_id: string;
+  room_name: string;
+  room_password: string;
+  private: boolean;
+  createdat: Date;
+}
+
+interface IUser {
+  user: string;
+  nickname: string;
+}
+
+interface IRoomNorm {
+  id: string;
+  users: IUser[];
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  private: boolean;
+}
 const resolvers = {
   Query: {
     getRooms: async function (_: any, __: any) {
-      const rooms = await Room.find({});
+      const rooms = await pool.query(
+        `select * from room left join room_user using(room_id)`
+      );
+      let normalizedRooms: IRoomNorm[] = [];
+
+      rooms.rows.map((room) => {
+        const candidateRoom: IRoomNorm | undefined = normalizedRooms.find(
+          (item) => item.name == room.room_name
+        );
+        if (candidateRoom) {
+          candidateRoom.users.push({
+            user: room.user_id,
+            nickname: room.nickname,
+          });
+        } else {
+          let item: IRoomNorm = {
+            id: room.room_id,
+            users: [{ user: room.user_id, nickname: room.nickname }],
+            name: room.room_name,
+            createdAt: room.createdat,
+            updatedAt: room.createdat,
+            private: room.private,
+          };
+          normalizedRooms.push(item);
+        }
+      });
+
+      // return data
       return {
-        rooms: [...rooms],
+        rooms: [...normalizedRooms],
       };
     },
     getRoom: async function (_: any, { id }: { id: string }) {
-      if (mongoose.Types.ObjectId.isValid(id)) {
-        const room = await Room.findOne({ _id: id });
+      const room: {
+        rows: Room[];
+      } = await pool.query(`select * from room where room_id = $1`, [id]);
+
+      if (room.rows[0]) {
+        const users = await pool.query(
+          `select user_id, nickname from room_user where room_id = $1`,
+          [id]
+        );
+
+        const normalizedUsers: IUser[] = [];
+
+        users.rows.map((item) => {
+          normalizedUsers.push({
+            user: item.user_id,
+            nickname: item.nickname,
+          });
+        });
+
         if (room) {
           return {
-            id: room._id,
-            users: [...room.users],
-            name: room.name,
-            createdAt: room.createdAt,
-            updatedAt: room.updatedAt,
-            private: room.private,
+            id: room.rows[0].room_id,
+            users: [...normalizedUsers],
+            name: room.rows[0].room_name,
+            createdAt: room.rows[0].createdat,
+            updatedAt: room.rows[0].createdat,
+            private: room.rows[0].private,
           };
         } else {
           return {
@@ -67,8 +131,12 @@ const resolvers = {
       context: any
     ) {
       // check if this room exists
-      const candidateRoom = await Room.findOne({ name });
-      if (candidateRoom) {
+      const candidateRoom = await pool.query(
+        `select * from room where room_name = $1`,
+        [name]
+      );
+
+      if (candidateRoom.rows[0]) {
         return {
           errors: [
             "Room with this name exists!",
@@ -76,78 +144,108 @@ const resolvers = {
           ],
         };
       }
-      const user = await User.findOne({ _id: context.user.id });
 
-      // if this room is private
+      const user = await pool.query(
+        `select * from user_account where user_id = $1`,
+        [context.user.id]
+      );
+
+      //  check if this room is private
       if (password.length > 0) {
-        const _id = new mongoose.Types.ObjectId();
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newRoom = {
-          name,
-          password: hashedPassword,
-          _id,
-          private: true,
-        };
-        const room = new Room(newRoom);
 
-        room.users.push({
-          user: context.user.id,
-          nickname: user?.nickname as string,
+        const room = await pool.query(
+          `insert into room(room_name,room_password,private) values($1,$2,$3) returning * `,
+          [name, hashedPassword, true]
+        );
+
+        const room_user = await pool.query(
+          `insert into room_user(user_id,nickname,room_id) values($1,$2,$3) returning * `,
+          [user.rows[0].user_id, user.rows[0].nickname, room.rows[0].room_id]
+        );
+
+        let normalizedUsers: IUser[] = [];
+
+        room_user.rows.map((item) => {
+          normalizedUsers.push({ user: item.user_id, nickname: item.nickname });
         });
 
-        await room.save();
-        pubsub.publish(ROOM_CREATE, room);
+        let room_normalized = {
+          name: room.rows[0].room_name,
+          id: room.rows[0].room_id,
+          users: normalizedUsers,
+          createdAt: room.rows[0].createdat,
+          private: room.rows[0].private,
+        };
+        pubsub.publish(ROOM_CREATE, room_normalized);
         return {
-          id: _id,
-          users: [...room.users],
+          id: room.rows[0].room_id,
+          users: [...normalizedUsers],
           name,
-          password,
-          createdAt: room.createdAt,
-          updatedAt: room.updatedAt,
+          createdAt: room.rows[0].createdat,
+          updatedAt: room.rows[0].createdat,
           private: true,
         };
       }
+      // public room
+      const room = await pool.query(
+        `insert into room(room_name,private) values($1,$2,$3) returning * `,
+        [name, true]
+      );
 
-      const _id = new mongoose.Types.ObjectId();
-      const newRoom = {
-        name,
-        _id,
-        private: false,
-      };
-      const room = new Room(newRoom);
-      room.users.push({
-        user: context.user.id,
-        nickname: user?.nickname as string,
+      const room_user = await pool.query(
+        `insert into room_user(user_id,nickname,room_id) values($1,$2,$3) returning * `,
+        [user.rows[0].user_id, user.rows[0].nickname, room.rows[0].room_id]
+      );
+
+      let normalizedUsers: IUser[] = [];
+
+      room_user.rows.map((item) => {
+        normalizedUsers.push({ user: item.user_id, nickname: item.nickname });
       });
-      await room.save();
-      pubsub.publish(ROOM_CREATE, room);
+
+      let room_normalized = {
+        name: room.rows[0].room_name,
+        id: room.rows[0].room_id,
+        users: normalizedUsers,
+        createdAt: room.rows[0].createdat,
+        private: room.rows[0].private,
+      };
+
+      pubsub.publish(ROOM_CREATE, room_normalized);
       return {
-        id: _id,
-        users: [...room.users],
+        id: room.rows[0].room_id,
+        users: [...normalizedUsers],
         name,
-        createdAt: room.createdAt,
-        updatedAt: room.updatedAt,
-        private: false,
+        createdAt: room.rows[0].createdat,
+        updatedAt: room.rows[0].createdat,
+        private: true,
       };
     },
-    // roomUpdate видалення кімнати
+    // roomUpdate
     roomUpdate: async function (_: any, { id }: { id: string }, context: any) {
-      console.log(id);
-      const room: IRoom | null = await Room.findOne({ _id: id });
-      if (room) {
+      const room = await pool.query(`select * from room where room_id = $1`, [
+        id,
+      ]);
+      if (room.rows[0]) {
+        // select room_users
+        const room_users = await pool.query(
+          `select * from room_user where room_id = $1`,
+          [id]
+        );
         // 1 user in room
-        if (room.users.length == 1) {
-          await Room.deleteOne({ _id: id });
-          // send id to delete in react
+        if (room_users.rowCount == 1) {
+          await pool.query(`delete from room_user where room_id = $1`, [id]);
+          await pool.query(`delete from room where room_id = $1`, [id]);
+          // send id to delete into react
           pubsub.publish(ROOM_DELETE, { id });
         } else {
           // 2+ users in room
-          room.users = [
-            ...room.users.filter((item) => item.user != context.user.id),
-          ];
-          room.usersGame = [];
+          await pool.query(`delete from room_user where user_id = $1`, [
+            context.user.id,
+          ]);
+          await pool.query(`delete from user_choices where room_id = $1`, [id]);
           // send id of user
-          await room.save();
           pubsub.publish(ROOM_USER_LEAVE, context.user.id);
         }
         return {
@@ -164,48 +262,61 @@ const resolvers = {
       { id, password }: { id: string; password: string },
       context: any
     ) {
-      const room: IRoom | null = await Room.findOne({ _id: id });
-      const user = await User.findOne({ _id: context.user.id });
-      if (room && room.users.length > 2) {
+      const room = await pool.query(`select * from room where room_id = $1`, [
+        id,
+      ]);
+
+      const user = await pool.query(
+        `select * from user_account where user_id = $1`,
+        [context.user.id]
+      );
+
+      const users = await pool.query(
+        `select * from room_user where room_id = $1`,
+        [id]
+      );
+
+      if (users.rowCount > 2) {
         return {
           errors: ["Too many users in room..."],
         };
       }
-      if (room && user) {
-        if (room.private) {
-          const match = await bcrypt.compare(password, room.password);
+      if (room.rows[0] && user.rows[0]) {
+        if (room.rows[0].private) {
+          const match = await bcrypt.compare(
+            password,
+            room.rows[0].room_password
+          );
           if (match) {
-            room.users.push({
-              user: context.user.id,
-              nickname: user?.nickname,
-            });
-            await room.save();
+            await pool.query(
+              `insert into room_user(user_id,nickname,room_id) values($1,$2,$3)`,
+              [context.user.id, user.rows[0].nickname, id]
+            );
             // subscription
             pubsub.publish(USER_JOIN, {
               id: context.user.id,
-              nickname: user.nickname,
+              nickname: user.rows[0].nickname,
             });
             return {
               status: "ok",
             };
           } else {
-            return { errors: ["Can\t join to this room :("] };
+            return { errors: ["Can't join to this room :("] };
           }
         } else {
-          if (room.users.length > 2) {
+          if (users.rowCount > 2) {
             return {
               errors: ["Too many users in room..."],
             };
           }
-          room.users.push({
-            user: context.user.id,
-            nickname: user?.nickname,
-          });
-          await room.save();
+          await pool.query(
+            `insert into room_user(user_id,nickname,room_id) values($1,$2,$3)`,
+            [context.user.id, user.rows[0].nickname, id]
+          );
           // subscription
           pubsub.publish(USER_JOIN, {
             id: context.user.id,
-            nickname: user.nickname,
+            nickname: user.rows[0].nickname,
           });
           return {
             status: "ok",
@@ -221,35 +332,48 @@ const resolvers = {
       { result, roomId }: { result: number; roomId: string },
       context: any
     ) {
-      const room: IRoom | null = await Room.findOne({ _id: roomId });
-      const player: IUser | null = await User.findOne({
-        _id: context.user.id,
-      });
+      const room = await pool.query(`select * from room where room_id = $1`, [
+        roomId,
+      ]);
 
-      if (room && player) {
-        const user = room.usersGame.find(
-          (item) => item.user != context.user.id
+      const player = await pool.query(
+        `select * from room_user where user_id = $1`,
+        [context.user.id]
+      );
+      if (room.rows[0] && player.rows[0]) {
+        // search opponent choice
+        const user = await pool.query(
+          `select * from user_choices where room_id = $1`,
+          [roomId]
         );
-        if (user) {
-          const match: IMatchResult = GameLogic(user.choice, result);
+        if (user.rows[0]) {
+          const match: IMatchResult = GameLogic(user.rows[0].choice, result);
           let resultArr: Array<Result> = [];
-          resultArr.push({ id: context.user.id, match, opponent: user.choice });
-          const match2: IMatchResult = GameLogic(result, user.choice);
           resultArr.push({
-            id: user.user,
+            id: context.user.id,
+            match,
+            opponent: user.rows[0].choice,
+          });
+          const match2: IMatchResult = GameLogic(result, user.rows[0].choice);
+          resultArr.push({
+            id: user.rows[0].user_id,
             match: match2,
             opponent: result,
           });
           pubsub.publish(ROOM_RESULT_SEND, resultArr);
-          room.usersGame = [];
-          await room.save();
+          await pool.query(`delete from user_choices where room_id = $1`, [
+            roomId,
+          ]);
         } else {
-          room.usersGame.push({
-            user: context.user.id,
-            nickname: player.nickname,
-            choice: result,
-          });
-          await room.save();
+          await pool.query(
+            `insert into user_choices(user_id,nickname,choice,room_id) values($1,$2,$3,$4)`,
+            [
+              context.user.id,
+              player.rows[0].nickname,
+              result,
+              room.rows[0].room_id,
+            ]
+          );
         }
       } else {
         return {
@@ -265,10 +389,9 @@ const resolvers = {
     roomCreated: {
       subscribe: () => pubsub.asyncIterator([ROOM_CREATE]),
       resolve: (payload: any) => {
-        console.log(payload.private);
         return {
           name: payload.name,
-          id: payload._id,
+          id: payload.id,
           users: payload.users,
           createdAt: payload.createdAt,
           private: payload.private,
@@ -278,26 +401,22 @@ const resolvers = {
     roomUserJoin: {
       subscribe: () => pubsub.asyncIterator([USER_JOIN]),
       resolve: (payload: any) => {
-        // nickname of user
-        // id of user
         return {
-          user: payload.id,
-          nickname: payload.nickname,
+          user: payload.id, // id of user
+          nickname: payload.nickname, // nickname of user
         };
       },
     },
     roomLastUserLeave: {
       subscribe: () => pubsub.asyncIterator([ROOM_DELETE]),
       resolve: (payload: any) => {
-        // id of room
-        return payload.id;
+        return payload.id; // id of room
       },
     },
     roomUserLeave: {
-      // id of leaving user
       subscribe: () => pubsub.asyncIterator([ROOM_USER_LEAVE]),
       resolve: (payload: any) => {
-        return payload;
+        return payload; // id of leaving user
       },
     },
     roomGetMatchResult: {

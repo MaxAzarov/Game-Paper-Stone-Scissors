@@ -1,5 +1,4 @@
 import express, { Application } from "express";
-import mongoose from "mongoose";
 import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -9,10 +8,11 @@ import resolvers from "./graphql/resolvers/rootResolver";
 import typeDefs from "./graphql/typeDefs/rootTypeDef";
 import TokenDecode from "./middlewares/auth";
 import AuthDirective from "./directives/AuthDirectives";
+import pool from "./db";
 
 const app: Application = express();
 dotenv.config();
-const { PORT = 5000, MONGODB_USER, MONGODB_PASS } = process.env;
+const { PORT = 5000 } = process.env;
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -56,15 +56,8 @@ app.use(cors());
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
-mongoose
-  .connect(
-    `mongodb+srv://${MONGODB_USER}:${MONGODB_PASS}@cluster0.bry1v.mongodb.net/test`,
-    {
-      useCreateIndex: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+pool
+  .connect()
   .then((res) => {
     httpServer.listen(PORT, () => {
       console.log(
@@ -76,19 +69,3 @@ mongoose
     });
   })
   .catch((e) => console.log("can't connect to db"));
-
-// drop collection
-// try {
-//   const db = mongoose.connection;
-//   db.once("open", function () {
-//     db.dropCollection("rooms", (err) => {
-//       if (err) {
-//         console.log("error delete collection");
-//       } else {
-//         console.log("delete collection success");
-//       }
-//     });
-//   });
-// } catch (e) {
-//   console.log(e.message);
-// }

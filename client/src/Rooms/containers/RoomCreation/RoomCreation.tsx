@@ -12,6 +12,7 @@ const RoomCreation = () => {
   const history = useHistory();
 
   useEffect(() => {
+    console.log(data);
     if (data && data.roomCreate.id) {
       history.push(`/room/${data.roomCreate.id}`);
     }
@@ -32,7 +33,7 @@ const RoomCreation = () => {
           type="text"
           id="room-name"
           value={roomName}
-          placeholder="Enter email"
+          placeholder="Enter room name"
           onChange={(e) => setRoomName(e.target.value)}
         />
         <input

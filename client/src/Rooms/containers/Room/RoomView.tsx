@@ -34,6 +34,7 @@ const RoomView = ({ id, opponent }: Props) => {
     fetchPolicy: "no-cache",
   });
   useEffect(() => {
+    console.log(data);
     setEnemy(opponent);
     // find opponent
     let user = data?.getRoom?.users?.find(
