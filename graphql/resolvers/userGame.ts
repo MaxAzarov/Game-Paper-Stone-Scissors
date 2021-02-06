@@ -1,5 +1,6 @@
 import pool from "../../db";
 import { MatchResult } from "../../types/rootTypes";
+import CountPercentOfWin from "../../utils/CountPercentOfWin";
 
 const resolvers = {
   Mutation: {
@@ -42,14 +43,9 @@ const resolvers = {
         [context.user.id]
       );
 
-      const percentOfWin =
-        +parseFloat(
-          (
-            (user.rows[0].wins /
-              (user.rows[0].wins + user.rows[0].defeat + user.rows[0].draw)) *
-            100
-          ).toString()
-        ).toFixed(2) || 0;
+      const { wins, defeat, draw } = user.rows[0];
+
+      const percentOfWin = CountPercentOfWin(wins, defeat, draw);
 
       if (user.rows[0]) {
         return {
@@ -74,21 +70,17 @@ const resolvers = {
         };
       }
 
-      interface IUsers {
+      const normalizedUsers: {
         nickname: string;
         percentOfWin: number;
-      }
-
-      const normalizedUsers: IUsers[] = [];
+      }[] = [];
 
       users.rows.map((item) => {
-        const percentOfWin =
-          +parseFloat(
-            (
-              (item.wins / (item.wins + item.defeat + item.draw)) *
-              100
-            ).toString()
-          ).toFixed(2) || 0;
+        const percentOfWin = CountPercentOfWin(
+          item.wins,
+          item.defeat,
+          item.draw
+        );
         normalizedUsers.push({ nickname: item.nickname, percentOfWin });
       });
       return {

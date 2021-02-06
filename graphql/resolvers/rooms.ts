@@ -3,7 +3,7 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
 // import { PubSub } from "apollo-server-express";
 
 import GameLogic from "../../client/src/User/utilities/GameLogic";
-import { IMatchResult } from "../../types/rootTypes";
+import { IMatchResult, IRoom } from "../../types/rootTypes";
 import pool from "../../db";
 
 const ROOM_CREATE = "ROOM_CREATE";
@@ -35,38 +35,25 @@ interface Room {
   createdat: Date;
 }
 
-interface IUser {
-  user: string;
-  nickname: string;
-}
-
-interface IRoomNorm {
-  id: string;
-  users: IUser[];
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  private: boolean;
-}
 const resolvers = {
   Query: {
-    getRooms: async function (_: any, __: any) {
+    getRooms: async function () {
       const rooms = await pool.query(
-        `select * from room left join room_user using(room_id)`
+        `select user_id as user, nickname, room_id, room_name, createdat, private from room left join room_user using(room_id)`
       );
-      let normalizedRooms: IRoomNorm[] = [];
+      let normalizedRooms: IRoom[] = [];
 
       rooms.rows.map((room) => {
-        const candidateRoom: IRoomNorm | undefined = normalizedRooms.find(
+        const candidateRoom: IRoom | undefined = normalizedRooms.find(
           (item) => item.name == room.room_name
         );
         if (candidateRoom) {
           candidateRoom.users.push({
-            user: room.user_id,
+            user: room.user,
             nickname: room.nickname,
           });
         } else {
-          let item: IRoomNorm = {
+          let item: IRoom = {
             id: room.room_id,
             users: [{ user: room.user_id, nickname: room.nickname }],
             name: room.room_name,
@@ -77,8 +64,6 @@ const resolvers = {
           normalizedRooms.push(item);
         }
       });
-
-      // return data
       return {
         rooms: [...normalizedRooms],
       };
@@ -90,23 +75,14 @@ const resolvers = {
 
       if (room.rows[0]) {
         const users = await pool.query(
-          `select user_id, nickname from room_user where room_id = $1`,
+          `select user_id as user, nickname from room_user where room_id = $1`,
           [id]
         );
-
-        const normalizedUsers: IUser[] = [];
-
-        users.rows.map((item) => {
-          normalizedUsers.push({
-            user: item.user_id,
-            nickname: item.nickname,
-          });
-        });
 
         if (room) {
           return {
             id: room.rows[0].room_id,
-            users: [...normalizedUsers],
+            users: [...users.rows],
             name: room.rows[0].room_name,
             createdAt: room.rows[0].createdat,
             updatedAt: room.rows[0].createdat,
@@ -146,7 +122,7 @@ const resolvers = {
       }
 
       const user = await pool.query(
-        `select * from user_account where user_id = $1`,
+        `select user_id, nickname from user_account where user_id = $1`,
         [context.user.id]
       );
 
@@ -160,27 +136,21 @@ const resolvers = {
         );
 
         const room_user = await pool.query(
-          `insert into room_user(user_id,nickname,room_id) values($1,$2,$3) returning * `,
+          `insert into room_user(user_id,nickname,room_id) values($1,$2,$3) returning user_id as user, nickname `,
           [user.rows[0].user_id, user.rows[0].nickname, room.rows[0].room_id]
         );
-
-        let normalizedUsers: IUser[] = [];
-
-        room_user.rows.map((item) => {
-          normalizedUsers.push({ user: item.user_id, nickname: item.nickname });
-        });
 
         let room_normalized = {
           name: room.rows[0].room_name,
           id: room.rows[0].room_id,
-          users: normalizedUsers,
+          users: room_user.rows,
           createdAt: room.rows[0].createdat,
           private: room.rows[0].private,
         };
         pubsub.publish(ROOM_CREATE, room_normalized);
         return {
           id: room.rows[0].room_id,
-          users: [...normalizedUsers],
+          users: room_user.rows,
           name,
           createdAt: room.rows[0].createdat,
           updatedAt: room.rows[0].createdat,
@@ -194,20 +164,14 @@ const resolvers = {
       );
 
       const room_user = await pool.query(
-        `insert into room_user(user_id,nickname,room_id) values($1,$2,$3) returning * `,
+        `insert into room_user(user_id,nickname,room_id) values($1,$2,$3)  returning user_id as user, nickname `,
         [user.rows[0].user_id, user.rows[0].nickname, room.rows[0].room_id]
       );
-
-      let normalizedUsers: IUser[] = [];
-
-      room_user.rows.map((item) => {
-        normalizedUsers.push({ user: item.user_id, nickname: item.nickname });
-      });
 
       let room_normalized = {
         name: room.rows[0].room_name,
         id: room.rows[0].room_id,
-        users: normalizedUsers,
+        users: room_user.rows,
         createdAt: room.rows[0].createdat,
         private: room.rows[0].private,
       };
@@ -215,7 +179,7 @@ const resolvers = {
       pubsub.publish(ROOM_CREATE, room_normalized);
       return {
         id: room.rows[0].room_id,
-        users: [...normalizedUsers],
+        users: [...room_user.rows],
         name,
         createdAt: room.rows[0].createdat,
         updatedAt: room.rows[0].createdat,

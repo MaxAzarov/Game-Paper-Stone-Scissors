@@ -26,16 +26,15 @@ export interface Response {
   errors: [string];
 }
 
-export interface Room {
+export interface IRoom {
   id: string;
   users: [{ user: string; nickname: string }];
   name: string;
-  password: string;
   createdAt: string;
   updatedAt: string;
   private: boolean;
 }
 
 export interface IGetRoom {
-  getRoom: Room & { errors: string };
+  getRoom: IRoom & { errors: string };
 }

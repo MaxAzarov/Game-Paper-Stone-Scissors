@@ -32,11 +32,12 @@ const resolvers = {
     ) {
       const candidateEmail: {
         rows: IUser[];
-      } = await pool.query(`select * from user_account where email = $1`, [
-        data,
-      ]);
+      } = await pool.query(
+        `select user_password, user_id, nickname from user_account where email = $1`,
+        [data]
+      );
 
-      if (candidateEmail) {
+      if (candidateEmail.rows[0]) {
         const match: boolean = await bcrypt.compare(
           password,
           candidateEmail.rows[0].user_password
@@ -63,32 +64,12 @@ const resolvers = {
           };
         }
       } else {
-        const candidateNickName: {
-          rows: IUser[];
-        } = await pool.query(`select * from user_account where nickname = $1`, [
-          data,
-        ]);
-
-        if (candidateNickName) {
-          const token = await jwt.sign(
-            { id: candidateNickName.rows[0].user_id, nick: data },
-            "secretkey",
-            {
-              expiresIn: "1h",
-            }
-          );
-          return {
-            token,
-            id: candidateNickName.rows[0].user_id,
-          };
-        } else {
-          return {
-            errors: [
-              "There isn't user with this email or nickname!",
-              "Please enter correct email or nickname!",
-            ],
-          };
-        }
+        return {
+          errors: [
+            "Password don't match with this email/nickname",
+            "Enter correct password",
+          ],
+        };
       }
     },
   },
@@ -99,17 +80,17 @@ const resolvers = {
     ) {
       const user: {
         rows: IUser[];
-      } = await pool.query(`select * from user_account where email = $1`, [
+      } = await pool.query(`select email from user_account where email = $1`, [
         email,
       ]);
-      if (!user.rows) {
+      if (user.rows[0].email) {
         return {
           errors: ["This email is occupied!", "Try another email to register!"],
         };
       } else {
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const createdUser = await pool.query(
+        await pool.query(
           `insert into user_account(email,nickname,user_password) values($1,$2,$3) returning * `,
           [email, nickname, hashedPassword]
         );
