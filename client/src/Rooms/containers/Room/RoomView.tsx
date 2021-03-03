@@ -21,10 +21,12 @@ interface Props {
 // /room/:id
 const RoomView = ({ id, opponent }: Props) => {
   const [userChoice, setUserChoice] = useState<number | null>();
-  const [enemy, setEnemy] = useState<IUser | undefined | null>(opponent);
+  const [enemy, setEnemy] = useState<
+    Pick<IUser, "nickname"> | undefined | null
+  >(opponent);
   const [choice, setChoice] = useState<number | null>();
   const [matchResult, setMatchResult] = useState<IMatchResult | null>();
-  const [opponentChoice, setOpponentChoice] = useState();
+  const [opponentChoice, setOpponentChoice] = useState<number>();
   const history = useHistory();
   const [roomSendUserOption] = useMutation(roomSendUserChoice);
   const { data, loading } = useQuery<IGetRoom>(getRoom, {
@@ -44,16 +46,22 @@ const RoomView = ({ id, opponent }: Props) => {
     }
   }, [setEnemy, data, opponent]);
 
+  interface RoomGetMatchResult {
+    roomGetMatchResult: { result: IMatchResult; opponent: number };
+  }
+
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
     const matchResult = client
-      .subscribe({ query: roomGetMatchResult })
+      .subscribe<RoomGetMatchResult>({ query: roomGetMatchResult })
       .subscribe(({ data }) => {
-        setMatchResult(data.roomGetMatchResult.result);
-        timeout = setTimeout(() => {
-          setMatchResult(null);
-        }, 2000);
-        setOpponentChoice(data.roomGetMatchResult.opponent);
+        if (data) {
+          setMatchResult(data.roomGetMatchResult.result);
+          timeout = setTimeout(() => {
+            setMatchResult(null);
+          }, 2000);
+          setOpponentChoice(data.roomGetMatchResult.opponent);
+        }
       });
 
     return () => {
@@ -85,19 +93,19 @@ const RoomView = ({ id, opponent }: Props) => {
   }
   return (
     <section className="room">
-      <RoomInfo date={date} enemy={enemy} data={data}></RoomInfo>
+      <RoomInfo date={date} enemy={enemy} data={data} />
       {matchResult && (
         <GameResult
           matchResult={matchResult}
           choice={choice}
           random={opponentChoice}
-        ></GameResult>
+        />
       )}
       <Buttons
         initialResult={enemy?.nickname && !matchResult}
         setUserChoice={setUserChoice}
-      ></Buttons>
-      <Info></Info>
+      />
+      <Info />
       <div onClick={() => history.push("/rooms")} className="room-leave">
         leave
       </div>

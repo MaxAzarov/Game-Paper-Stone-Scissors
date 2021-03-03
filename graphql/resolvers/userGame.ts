@@ -33,15 +33,22 @@ const resolvers = {
   },
   Query: {
     getUserMatchResult: async function (_: any, __: any, context: any) {
-      const user = await User.findById(context.user.id);
-      if (user) {
-        return {
-          wins: user.wins,
-          defeat: user.defeat,
-          draw: user.draw,
-          percentOfWin: user.percentOfWin,
-        };
-      } else {
+      try {
+        const user = await User.findById(context.user.id);
+
+        if (user) {
+          return {
+            wins: user.wins,
+            defeat: user.defeat,
+            draw: user.draw,
+            percentOfWin: user.percentOfWin,
+          };
+        } else {
+          return {
+            errors: ["Please login again to play!"],
+          };
+        }
+      } catch (e) {
         return {
           errors: ["Please login again to play!"],
         };

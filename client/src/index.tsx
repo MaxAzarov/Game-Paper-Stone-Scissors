@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useHistory } from "react-router-dom";
 import { setContext } from "@apollo/client/link/context";
 import {
   ApolloClient,
@@ -43,11 +43,6 @@ const authLink = setContext((_, { headers }) => {
 let link = ApolloLink.from([
   onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors) {
-      // graphQLErrors.map(({ message, locations, path }) =>
-      // console.log(
-      //   `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      // )
-      // );
     }
     if (networkError)
       console.error(`[Network error]: ${networkError}`, networkError.stack);

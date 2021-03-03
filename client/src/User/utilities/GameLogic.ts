@@ -1,13 +1,11 @@
 import { IMatchResult } from "../../../../types/rootTypes";
 
 enum Match {
-  Stone,
-  Scissors,
-  Paper,
+  Stone = 0,
+  Scissors = 1,
+  Paper = 2,
 }
-// Stone 0
-// Scissors 1
-// Paper 2
+
 const GameLogic = (random: number, userChoice: number): IMatchResult => {
   if (
     ((random as number) === Match.Stone && userChoice === Match.Scissors) ||

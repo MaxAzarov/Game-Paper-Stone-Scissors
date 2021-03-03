@@ -132,7 +132,6 @@ const resolvers = {
     },
     // roomUpdate видалення кімнати
     roomUpdate: async function (_: any, { id }: { id: string }, context: any) {
-      console.log(id);
       const room: IRoom | null = await Room.findOne({ _id: id });
       if (room) {
         // 1 user in room
@@ -265,7 +264,6 @@ const resolvers = {
     roomCreated: {
       subscribe: () => pubsub.asyncIterator([ROOM_CREATE]),
       resolve: (payload: any) => {
-        console.log(payload.private);
         return {
           name: payload.name,
           id: payload._id,
@@ -278,26 +276,22 @@ const resolvers = {
     roomUserJoin: {
       subscribe: () => pubsub.asyncIterator([USER_JOIN]),
       resolve: (payload: any) => {
-        // nickname of user
-        // id of user
         return {
-          user: payload.id,
-          nickname: payload.nickname,
+          user: payload.id, // id of user
+          nickname: payload.nickname, // nickname of user
         };
       },
     },
     roomLastUserLeave: {
       subscribe: () => pubsub.asyncIterator([ROOM_DELETE]),
       resolve: (payload: any) => {
-        // id of room
-        return payload.id;
+        return payload.id; // id of room
       },
     },
     roomUserLeave: {
-      // id of leaving user
       subscribe: () => pubsub.asyncIterator([ROOM_USER_LEAVE]),
       resolve: (payload: any) => {
-        return payload;
+        return payload; // id of leaving user
       },
     },
     roomGetMatchResult: {

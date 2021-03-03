@@ -24,6 +24,7 @@ const Rooms = ({ match }: RouteComponentProps<Props>) => {
         query: roomUserJoin,
       })
       .subscribe(({ data }) => {
+        console.log(data);
         setOpponent(data.roomUserJoin);
       });
 

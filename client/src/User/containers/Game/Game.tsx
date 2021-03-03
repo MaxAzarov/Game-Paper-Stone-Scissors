@@ -15,41 +15,27 @@ import Menu from "../../../Common/components/Menu/Menu";
 import "./Game.scss";
 
 const Game = () => {
-  const [userChoice, setUserChoice] = useState<number | null>();
+  const history = useHistory();
   const [random, setRandom] = useState<number>();
   const [choice, setChoice] = useState<number | null>();
+  const [userChoice, setUserChoice] = useState<number | null>();
   const [matchResult, setMatchResult] = useState<IMatchResult | null>();
-  const [sendMatchResult, { data, error }] = useMutation(sendMatchRes);
-  const {
-    data: initialUserResult,
-    error: MatchResultError,
-    refetch,
-  } = useQuery(getUserMatchResult);
-
-  const history = useHistory();
-  useEffect(() => {
-    if (data) {
-      refetch().catch((e) => {
-        history.push("/login");
-      });
-    }
-  }, [data, refetch, history]);
+  const [sendMatchResult, { error }] = useMutation(sendMatchRes, {});
+  const { data, error: MatchResultError } = useQuery(getUserMatchResult);
 
   useEffect(() => {
     if (userChoice !== undefined && userChoice !== null) {
-      let MatchResult: IMatchResult;
-      let rand = Math.floor(Math.random() * 3);
+      const rand = Math.floor(Math.random() * 3);
       setRandom(rand);
-      MatchResult = GameLogic(rand, userChoice as number);
+      let MatchResult: IMatchResult = GameLogic(rand, userChoice);
       setChoice(userChoice);
       setMatchResult(MatchResult);
       sendMatchResult({
         variables: {
           result: MatchResult,
         },
-      }).catch((e) => {
-        history.push("/login");
-      });
+        refetchQueries: [{ query: getUserMatchResult }],
+      }).catch((e) => history.push("/login"));
 
       setTimeout(() => {
         setMatchResult(undefined);
@@ -68,12 +54,10 @@ const Game = () => {
       {MatchResultError && <Error error={MatchResultError?.message} />}
       <Buttons
         setUserChoice={setUserChoice}
-        initialResult={initialUserResult && !matchResult}
+        initialResult={data && !matchResult}
       />
       <Info />
-      {initialUserResult && (
-        <UserStatistics statistics={initialUserResult.getUserMatchResult} />
-      )}
+      {data && <UserStatistics statistics={data.getUserMatchResult} />}
     </section>
   );
 };

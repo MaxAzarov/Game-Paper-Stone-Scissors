@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
 
-import { Room } from "../../../../../types/rootTypes";
-import roomJoin from "../../graphql/Mutation/RoomJoin";
+import { Room } from "../../../../../../types/rootTypes";
+import roomJoin from "../../../graphql/Mutation/RoomJoin";
 import "./RoomItem.scss";
 
 interface Props {
@@ -13,17 +13,16 @@ interface Props {
   setRoomId: (val: string) => void;
 }
 
+// TODO handle errors
 const RoomItem = ({ roomId, item, roomPassword, setRoomId }: Props) => {
-  const [RoomJoin, { data: roomJoinResp }] = useMutation(roomJoin);
   const history = useHistory();
+  const [RoomJoin] = useMutation(roomJoin, {
+    onCompleted(data) {
+      console.log(data.roomJoin.status);
+      !data.roomJoin.errors && history.push(`/room/${roomId}`);
+    },
+  });
 
-  // TODO handle err
-  useEffect(() => {
-    if (roomJoinResp && !roomJoinResp.roomJoin.errors) {
-      console.log(roomJoinResp);
-      history.push(`/room/${roomId}`);
-    }
-  }, [roomJoinResp, history, roomId]);
   return (
     <div
       className="room-item"
@@ -47,7 +46,7 @@ const RoomItem = ({ roomId, item, roomPassword, setRoomId }: Props) => {
         })}
       </p>
       {item.private && (
-        <img src={require("./lock.png")} className="room-lock" alt="lock" />
+        <img src={require("./../lock.png")} className="room-lock" alt="lock" />
       )}
     </div>
   );

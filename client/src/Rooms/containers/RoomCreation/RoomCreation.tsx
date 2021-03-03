@@ -1,21 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { Link, useHistory } from "react-router-dom";
 
 import RoomCreate from "../../graphql/Mutation/RoomCreate";
 import "./RoomCreation.scss";
 
+interface RoomCreation {
+  roomCreate: {
+    id: string;
+    errors: string[];
+  };
+}
+
 const RoomCreation = () => {
   const [roomName, setRoomName] = useState<string>("");
   const [roomPassword, setRoomPassword] = useState<string>("");
-  const [createRoom, { data, error }] = useMutation(RoomCreate);
+  const [errorsData, setErrorsData] = useState("");
   const history = useHistory();
 
-  useEffect(() => {
-    if (data && data.roomCreate.id) {
-      history.push(`/room/${data.roomCreate.id}`);
-    }
-  }, [data, history]);
+  const [createRoom, { error }] = useMutation(RoomCreate, {
+    onCompleted({ roomCreate: { id, errors } }: RoomCreation) {
+      errors && setErrorsData(errors.join(" "));
+      error && setErrorsData(errorsData + (error.message as string));
+      id && history.push(`/room/${id}`);
+    },
+  });
 
   return (
     <section className="room-create">
@@ -24,15 +33,12 @@ const RoomCreation = () => {
           src={require("./../../../Common/components/Home/logo2.png")}
           alt=""
         />
-        {data && data.roomCreate.error && (
-          <div className="room-create__error">{data.roomCreate.error[0]}</div>
-        )}
-        {error && <div className="room-create__error">{error.message}</div>}
+        <div className="room-create__error">{errorsData}</div>
         <input
           type="text"
           id="room-name"
           value={roomName}
-          placeholder="Enter email"
+          placeholder="Enter room name"
           onChange={(e) => setRoomName(e.target.value)}
         />
         <input
@@ -45,16 +51,16 @@ const RoomCreation = () => {
 
         <button
           type="submit"
-          onClick={() => {
+          onClick={() =>
             createRoom({
               variables: {
                 name: roomName,
                 password: roomPassword,
               },
-            }).catch((e) => {
-              console.log(e.message);
-            });
-          }}
+            }).catch((error) =>
+              setErrorsData(errorsData + (error.message as string))
+            )
+          }
         >
           Create New Room!
         </button>

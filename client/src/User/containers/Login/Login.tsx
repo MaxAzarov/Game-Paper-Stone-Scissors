@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { Link, useHistory } from "react-router-dom";
 
@@ -16,25 +16,28 @@ const Login = () => {
   const history = useHistory();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [userLogin, { data }] = useLazyQuery<IUserLogin>(UserLogin);
-  const [errors, setErrors] = useState<string[] | null | undefined>(
-    data?.UserLogin?.errors
-  );
-  if (data?.UserLogin.id && data?.UserLogin.token && data?.UserLogin.nickname) {
-    localStorage.setItem("token", data.UserLogin.token);
-    localStorage.setItem("id", data.UserLogin.id);
-    localStorage.setItem("nickname", data.UserLogin.nickname);
-    history.push("/");
-  }
+  const [errors, setErrors] = useState<string[] | null | undefined>();
+  const [userLogin] = useLazyQuery<IUserLogin>(UserLogin, {
+    onCompleted(data) {
+      if (data.UserLogin.errors) {
+        setErrors(data.UserLogin.errors);
+        setTimeout(() => {
+          setErrors(undefined);
+        }, 3000);
+      }
+      if (
+        data.UserLogin.id &&
+        data.UserLogin.token &&
+        data.UserLogin.nickname
+      ) {
+        localStorage.setItem("token", data.UserLogin.token);
+        localStorage.setItem("id", data.UserLogin.id);
+        localStorage.setItem("nickname", data.UserLogin.nickname);
+        history.push("/");
+      }
+    },
+  });
 
-  useEffect(() => {
-    if (data) {
-      setErrors(data.UserLogin.errors);
-      setTimeout(() => {
-        setErrors(undefined);
-      }, 3000);
-    }
-  }, [data]);
   return (
     <section className="login">
       <div className="login-wrapper">

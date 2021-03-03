@@ -8,3 +8,4 @@ temp/
 README.md
 dump.rdb
 .env
+dist/

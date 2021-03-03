@@ -24,11 +24,14 @@ const Registration: React.FC = () => {
   const [userRegister, { data }] = useMutation<
     IUserRegister,
     IUserRegistersVariables
-  >(UserRegister);
+  >(UserRegister, {
+    onCompleted(data) {
+      if (data && data.UserRegister.status) {
+        history.push("/login");
+      }
+    },
+  });
 
-  if (data && data.UserRegister.status) {
-    history.push("/login");
-  }
   return (
     <section className="registration">
       {data?.UserRegister?.errors}

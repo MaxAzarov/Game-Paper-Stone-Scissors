@@ -5,7 +5,7 @@ import "./RoomInfo.scss";
 
 interface Props {
   date?: Date;
-  enemy: IUser | null | undefined;
+  enemy: Pick<IUser, "nickname"> | null | undefined;
   data?: IGetRoom | undefined;
 }
 

@@ -8,7 +8,8 @@ import roomCreated from "../../graphql/Subscription/RoomCreated";
 import { Room } from "../../../../../types/rootTypes";
 import roomLastUserLeave from "../../graphql/Subscription/RoomLastUserLeave";
 import Menu from "../../../Common/components/Menu/Menu";
-import RoomItem from "./RoomItem";
+import RoomItem from "./RoomItem/RoomItem";
+import Error from "./../../../Common/components/Error/Error";
 import "./RoomContainer.scss";
 
 interface IRooms {
@@ -25,15 +26,15 @@ const RoomsView: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomPassword, setRoomPassword] = useState<string>("");
   const [roomId, setRoomId] = useState<string>("");
-  const { data } = useQuery<IRooms, string>(getRooms, {
+  const [errors, setErrors] = useState<string>("");
+  const { error } = useQuery<IRooms, string>(getRooms, {
     fetchPolicy: "network-only",
+    onCompleted(data) {
+      error && setErrors(error.message);
+      setRooms(data.getRooms.rooms);
+    },
   });
   const history = useHistory();
-  useEffect(() => {
-    if (data) {
-      setRooms(data.getRooms.rooms);
-    }
-  }, [data]);
 
   useEffect(() => {
     // room created
@@ -80,6 +81,7 @@ const RoomsView: React.FC = () => {
             <p className="rooms-message">No available rooms</p>
           )}
         </div>
+        {errors && <Error error={errors} />}
         <input
           type="password"
           value={roomPassword}
