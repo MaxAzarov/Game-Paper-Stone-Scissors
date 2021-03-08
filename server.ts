@@ -11,6 +11,7 @@ import TokenDecode from "./middlewares/auth";
 import AuthDirective from "./directives/AuthDirectives";
 
 const app: Application = express();
+
 dotenv.config();
 const { PORT = 5000, MONGODB_USER, MONGODB_PASS } = process.env;
 const server = new ApolloServer({
@@ -65,7 +66,7 @@ mongoose
       useUnifiedTopology: true,
     }
   )
-  .then((res) => {
+  .then(() => {
     httpServer.listen(PORT, () => {
       console.log(
         `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
@@ -75,7 +76,7 @@ mongoose
       );
     });
   })
-  .catch((e) => console.log("can't connect to db"));
+  .catch(() => console.log("can't connect to db"));
 
 // drop collection
 // try {
