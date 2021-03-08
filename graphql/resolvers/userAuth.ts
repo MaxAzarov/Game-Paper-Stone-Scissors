@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-import User, { IUser } from "./../../models/User";
+import { IUser } from "./../../models/User";
+import UserAuth from "./../../services/UserAuth";
 
 interface UserRegister {
   email: string;
@@ -15,8 +16,7 @@ interface UserLogin {
 const resolvers = {
   Query: {
     UserLogin: async function (_: any, { data, password }: UserLogin) {
-      // email
-      const candidateEmail: IUser | null = await User.findOne({ email: data });
+      const candidateEmail: IUser | null = await UserAuth.findUserByEmail(data);
       if (candidateEmail) {
         const match: boolean = await bcrypt.compare(
           password,
@@ -44,29 +44,12 @@ const resolvers = {
           };
         }
       } else {
-        const candidateNickName: IUser | null = await User.findOne({
-          nickname: data,
-        });
-        if (candidateNickName) {
-          const token = await jwt.sign(
-            { id: candidateNickName._id, nick: data },
-            "secretkey",
-            {
-              expiresIn: "1h",
-            }
-          );
-          return {
-            token,
-            id: candidateNickName._id,
-          };
-        } else {
-          return {
-            errors: [
-              "There isn't user with this email or nickname!",
-              "Please enter correct email or nickname!",
-            ],
-          };
-        }
+        return {
+          errors: [
+            "Password don't match with this email/nickname",
+            "Enter correct password",
+          ],
+        };
       }
     },
   },
@@ -75,15 +58,21 @@ const resolvers = {
       _: any,
       { email, nickname, password }: UserRegister
     ) {
-      const user = await User.findOne({ email });
+      const user: IUser | null = await UserAuth.findUserByEmail(email);
+
       if (user) {
         return {
           errors: ["This email is occupied!", "Try another email to register!"],
         };
       } else {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ email, nickname, password: hashedPassword });
-        await newUser.save();
+
+        UserAuth.createNewUser({
+          email,
+          nickname,
+          password: hashedPassword,
+        });
+
         return {
           status: "ok",
         };
