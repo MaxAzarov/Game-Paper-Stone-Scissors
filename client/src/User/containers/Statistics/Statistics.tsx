@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { useQuery } from "@apollo/client";
 
-import { UserStats } from "../../../../../types/rootTypes";
+import { UserStats } from "../../../types/rootTypes";
 import getUsersStatistics from "../../graphql/Query/GetUsersStatistics";
 import Spinner from "../../../Common/components/Spinner/Spinner";
 import "./Statistics.scss";

@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import sendMatchRes from "../../graphql/Mutation/SendUserMatchResult";
 import UserStatistics from "../../components/UserStatistics/UserStatistics";
 import getUserMatchResult from "../../graphql/Query/GetUserMatchResult";
-import { IMatchResult } from "./../../../../../types/rootTypes";
+import { IMatchResult } from "../../../types/rootTypes";
 import Buttons from "../../../Common/components/Buttons/Buttons";
 import GameLogic from "../../utilities/GameLogic";
 import GameResult from "../../../Common/components/GameResult/GameResult";

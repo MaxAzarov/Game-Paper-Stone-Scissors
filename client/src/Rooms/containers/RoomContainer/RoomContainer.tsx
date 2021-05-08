@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { client } from "../../../index";
 import getRooms from "../../graphql/Query/GetRooms";
 import roomCreated from "../../graphql/Subscription/RoomCreated";
-import { Room } from "../../../../../types/rootTypes";
+import { Room } from "../../../types/rootTypes";
 import roomLastUserLeave from "../../graphql/Subscription/RoomLastUserLeave";
 import Menu from "../../../Common/components/Menu/Menu";
 import RoomItem from "./RoomItem/RoomItem";

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { IGetRoom, IUser } from "../../../../../types/rootTypes";
+import { IGetRoom, IUser } from "../../../types/rootTypes";
 import "./RoomInfo.scss";
 
 interface Props {

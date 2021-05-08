@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { useHistory } from "react-router-dom";
 
-import { IGetRoom, IMatchResult, IUser } from "../../../../../types/rootTypes";
+import { IGetRoom, IMatchResult, IUser } from "../../../types/rootTypes";
 import Buttons from "../../../Common/components/Buttons/Buttons";
 import getRoom from "../../graphql/Query/GetRoom";
 import roomSendUserChoice from "../../graphql/Mutation/RoomSendUserChoice";

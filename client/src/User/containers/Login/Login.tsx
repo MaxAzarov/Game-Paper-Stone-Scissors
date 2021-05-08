@@ -3,7 +3,7 @@ import { useLazyQuery } from "@apollo/client";
 import { Link, useHistory } from "react-router-dom";
 
 import UserLogin from "../../graphql/Query/UserLogin";
-import { IUser } from "../../../../../types/rootTypes";
+import { IUser } from "../../../types/rootTypes";
 import "./Login.scss";
 
 interface IUserLogin {

@@ -2,7 +2,7 @@ import React from "react";
 import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
 
-import { Room } from "../../../../../../types/rootTypes";
+import { Room } from "../../../../types/rootTypes";
 import roomJoin from "../../../graphql/Mutation/RoomJoin";
 import "./RoomItem.scss";
 

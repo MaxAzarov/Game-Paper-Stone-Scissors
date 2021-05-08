@@ -3,7 +3,7 @@ import { useMutation } from "@apollo/client";
 import { Link, useHistory } from "react-router-dom";
 
 import { UserRegister } from "../../graphql/Mutation/UserRegister";
-import { Response } from "../../../../../types/rootTypes";
+import { Response } from "../../../types/rootTypes";
 import "./Registration.scss";
 
 interface IUserRegister {

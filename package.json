@@ -15,7 +15,7 @@
   "keywords": [
     "game-paper-stone-scissors"
   ],
-  "author": "Max Azarov",
+  "author": "Max Azarov <volodor05412@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "apollo-server-express": "^2.18.2",

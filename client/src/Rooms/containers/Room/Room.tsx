@@ -3,7 +3,7 @@ import { useMutation } from "@apollo/client";
 import { withRouter, RouteComponentProps } from "react-router-dom";
 
 import { client } from "../../..";
-import { IUser } from "../../../../../types/rootTypes";
+import { IUser } from "../../../types/rootTypes";
 import roomUserJoin from "../../graphql/Subscription/RoomUserJoin";
 import roomUpdate from "./../../graphql/Mutation/RoomDelete";
 import roomUserLeave from "../../graphql/Subscription/RoomUserLeave";

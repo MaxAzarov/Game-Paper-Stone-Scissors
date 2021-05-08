@@ -1,7 +1,7 @@
 import React from "react";
 
 import "./GameResult.scss";
-import { IMatchResult } from "../../../../../types/rootTypes";
+import { IMatchResult } from "../../../types/rootTypes";
 import paper from "./paper.png";
 import scissors from "./scissors.png";
 import stone from "./stone.png";

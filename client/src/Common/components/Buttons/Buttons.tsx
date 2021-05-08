@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { IUserGameChoice } from "../../../../../types/rootTypes";
+import { IUserGameChoice } from "../../../types/rootTypes";
 import "./Buttons.scss";
 
 interface Props {

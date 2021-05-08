@@ -1,6 +1,6 @@
 import UserAuth from "../../services/UserAuth";
 import UserGame from "../../services/UserGame";
-import { MatchResult } from "../../types/rootTypes";
+import { MatchResult } from "../../client/src/types/rootTypes";
 import { IUser } from "./../../models/User";
 
 const resolvers = {

@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Result } from "../../../../../types/rootTypes";
+import { Result } from "../../../types/rootTypes";
 import "./UserStatistics.scss";
 
 interface Props {

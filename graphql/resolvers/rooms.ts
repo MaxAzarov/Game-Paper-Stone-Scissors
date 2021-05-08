@@ -5,7 +5,7 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
 import { IUser } from "../../models/User";
 import { IRoom } from "./../../models/Room";
 import GameLogic from "../../client/src/User/utilities/GameLogic";
-import { IMatchResult } from "../../types/rootTypes";
+import { IMatchResult } from "../../client/src/types/rootTypes";
 import Rooms from "./../../services/Rooms";
 import UserAuth from "../../services/UserAuth";
 
@@ -15,13 +15,22 @@ const ROOM_DELETE = "ROOM_DELETE";
 const ROOM_USER_LEAVE = "ROOM_USER_LEAVE";
 const ROOM_RESULT_SEND = "ROOM_RESULT_SEND";
 
-const pubsub = new RedisPubSub({
-  connection: {
-    host: "127.0.0.1",
-    port: 6379,
-    retry_strategy: (options: any) => Math.max(options.attempt * 100, 3000),
-  },
-});
+let pubsub;
+try {
+  pubsub = new RedisPubSub({
+    connection: {
+      // host: "127.0.0.1",
+      // host: "redis://cache",
+      host: "redis",
+      // host: "0.0.0.0",
+      port: 6379,
+      retry_strategy: (options: any) => Math.max(options.attempt * 100, 20),
+    },
+  });
+} catch (e) {
+  console.log(e.message);
+}
+
 interface Result {
   id: string;
   match: IMatchResult;
@@ -214,7 +223,7 @@ const resolvers = {
 
         if (user) {
           const match: IMatchResult = GameLogic(user.choice, result);
-          let resultArr: Array<Result> = [];
+          const resultArr: Array<Result> = [];
           resultArr.push({ id: context.user.id, match, opponent: user.choice });
           const match2: IMatchResult = GameLogic(result, user.choice);
           resultArr.push({

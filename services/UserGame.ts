@@ -1,5 +1,5 @@
 import User, { IUser } from "./../models/User";
-import { MatchResult } from "../types/rootTypes";
+import { MatchResult } from "../client/src/types/rootTypes";
 
 class UserGame {
   async updateMatchResult(user: IUser, args: MatchResult) {

@@ -1,4 +1,4 @@
-import { IMatchResult } from "../../../../types/rootTypes";
+import { IMatchResult } from "../../types/rootTypes";
 
 enum Match {
   Stone = 0,
