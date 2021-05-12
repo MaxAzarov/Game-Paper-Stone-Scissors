@@ -41,6 +41,17 @@ const server = new ApolloServer({
   formatError(e) {
     return e;
   },
+  subscriptions: {
+    onConnect: async (connectionParams, webSocket, context) => {
+      console.log("connectedParams:", connectionParams);
+      if ((connectionParams as any).authToken) {
+        const user = await TokenDecode((connectionParams as any).authToken);
+        return {
+          user,
+        };
+      }
+    },
+  },
 });
 
 app.disable("x-powered-by");

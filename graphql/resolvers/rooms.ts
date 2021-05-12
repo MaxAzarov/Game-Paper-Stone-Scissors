@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
+import { PubSubEngine } from "graphql-subscriptions";
 import { RedisPubSub } from "graphql-redis-subscriptions";
 
 import { IUser } from "../../models/User";
@@ -15,14 +16,12 @@ const ROOM_DELETE = "ROOM_DELETE";
 const ROOM_USER_LEAVE = "ROOM_USER_LEAVE";
 const ROOM_RESULT_SEND = "ROOM_RESULT_SEND";
 
-let pubsub;
+let pubsub: PubSubEngine;
 try {
   pubsub = new RedisPubSub({
     connection: {
-      // host: "127.0.0.1",
-      // host: "redis://cache",
-      host: "redis",
-      // host: "0.0.0.0",
+      host: "127.0.0.1",
+      // host: "redis",
       port: 6379,
       retry_strategy: (options: any) => Math.max(options.attempt * 100, 20),
     },
@@ -31,6 +30,21 @@ try {
   console.log(e.message);
 }
 
+const withCancel = (asyncIterator, onCancel) => {
+  const asyncReturn = asyncIterator.return;
+
+  console.log(asyncIterator);
+
+  asyncIterator.return = () => {
+    onCancel();
+    return asyncReturn
+      ? asyncReturn.call(asyncIterator)
+      : Promise.resolve({ value: undefined, done: true });
+  };
+
+  return asyncIterator;
+};
+
 interface Result {
   id: string;
   match: IMatchResult;
@@ -38,13 +52,37 @@ interface Result {
 }
 const resolvers = {
   Query: {
-    getRooms: async function (_: any, __: any) {
+    getRooms: async function (): Promise<{
+      rooms: IRoom[];
+    }> {
       const rooms = await Rooms.getAllRooms();
       return {
         rooms: [...rooms],
       };
     },
-    getRoom: async function (_: any, { id }: { id: string }) {
+    getRoom: async function (
+      _: any,
+      { id }: { id: string }
+    ): Promise<
+      | {
+          id: any;
+          users: any[];
+          name: string;
+          createdAt: string;
+          updatedAt: string;
+          private: boolean;
+          errors?: undefined;
+        }
+      | {
+          errors: string[];
+          id?: undefined;
+          users?: undefined;
+          name?: undefined;
+          createdAt?: undefined;
+          updatedAt?: undefined;
+          private?: undefined;
+        }
+    > {
       if (mongoose.Types.ObjectId.isValid(id)) {
         const room = await Rooms.getRoomById(id);
         if (room) {
@@ -97,7 +135,7 @@ const resolvers = {
           private: true,
         };
 
-        const room = await Rooms.createNewRoomAndAddUsers(
+        const room: IRoom = await Rooms.createNewRoomAndAddUsers(
           newRoom,
           context.user.id,
           user!.nickname
@@ -140,8 +178,22 @@ const resolvers = {
       };
     },
     // roomUpdate видалення кімнати
-    roomUpdate: async function (_: any, { id }: { id: string }, context: any) {
+    roomUpdate: async function (
+      _: any,
+      { id }: { id: string },
+      context: any
+    ): Promise<
+      | {
+          status: string;
+          errors?: undefined;
+        }
+      | {
+          errors: string[];
+          status?: undefined;
+        }
+    > {
       const room = await Rooms.getRoomById(id);
+
       if (room) {
         // 1 user in room
         const usersAmount = await Rooms.checkRoomUsers(room);
@@ -167,7 +219,16 @@ const resolvers = {
       _: any,
       { id, password }: { id: string; password: string },
       context: any
-    ) {
+    ): Promise<
+      | {
+          errors: string[];
+          status?: undefined;
+        }
+      | {
+          status: string;
+          errors?: undefined;
+        }
+    > {
       const room: IRoom | null = await Rooms.getRoomById(id);
       const user = await UserAuth.findUserById(context.user.id);
       if (room && user) {
@@ -214,7 +275,16 @@ const resolvers = {
       _: any,
       { result, roomId }: { result: number; roomId: string },
       context: any
-    ) {
+    ): Promise<
+      | {
+          errors: string[];
+          status?: undefined;
+        }
+      | {
+          status: string;
+          errors?: undefined;
+        }
+    > {
       const room: IRoom | null = await Rooms.getRoomById(roomId);
       const player: IUser | null = await UserAuth.findUserById(context.user.id);
 
@@ -254,8 +324,8 @@ const resolvers = {
   },
   Subscription: {
     roomCreated: {
-      subscribe: () => pubsub.asyncIterator([ROOM_CREATE]),
-      resolve: (payload: any) => {
+      subscribe: (): AsyncIterator<any> => pubsub.asyncIterator([ROOM_CREATE]),
+      resolve: (payload: IRoom): Partial<IRoom> => {
         return {
           name: payload.name,
           id: payload._id,
@@ -266,8 +336,14 @@ const resolvers = {
       },
     },
     roomUserJoin: {
-      subscribe: () => pubsub.asyncIterator([USER_JOIN]),
-      resolve: (payload: any) => {
+      subscribe: (): AsyncIterator<any> => pubsub.asyncIterator([USER_JOIN]),
+      resolve: (payload: {
+        id: string;
+        nickname: string;
+      }): {
+        user: string;
+        nickname: string;
+      } => {
         return {
           user: payload.id, // id of user
           nickname: payload.nickname, // nickname of user
@@ -275,20 +351,31 @@ const resolvers = {
       },
     },
     roomLastUserLeave: {
-      subscribe: () => pubsub.asyncIterator([ROOM_DELETE]),
-      resolve: (payload: any) => {
+      subscribe: (): AsyncIterator<any> => pubsub.asyncIterator([ROOM_DELETE]),
+      resolve: (payload: { id: number }): number => {
         return payload.id; // id of room
       },
     },
     roomUserLeave: {
-      subscribe: () => pubsub.asyncIterator([ROOM_USER_LEAVE]),
-      resolve: (payload: any) => {
+      subscribe: (): AsyncIterator<any> =>
+        pubsub.asyncIterator([ROOM_USER_LEAVE]),
+      resolve: (payload: string): string => {
         return payload; // id of leaving user
       },
     },
     roomGetMatchResult: {
-      subscribe: () => pubsub.asyncIterator(ROOM_RESULT_SEND),
-      resolve: (payload: Array<Result>, args: any, context: any) => {
+      subscribe: (): AsyncIterator<any> =>
+        pubsub.asyncIterator(ROOM_RESULT_SEND),
+      resolve: (
+        payload: Array<Result>,
+        args: any,
+        context: any
+      ):
+        | {
+            result: IMatchResult;
+            opponent: number;
+          }
+        | undefined => {
         for (let i = 0; i < payload.length; i++) {
           if (context.user.id == payload[i].id) {
             return {

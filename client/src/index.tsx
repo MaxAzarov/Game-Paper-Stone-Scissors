@@ -9,7 +9,6 @@ import {
   InMemoryCache,
   split,
   ApolloLink,
-  DefaultOptions,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
@@ -62,22 +61,11 @@ let link = ApolloLink.from([
   ),
 ]);
 
-const defaultOptions: DefaultOptions = {
-  watchQuery: {
-    fetchPolicy: "no-cache",
-    errorPolicy: "ignore",
-  },
-  query: {
-    fetchPolicy: "no-cache",
-    errorPolicy: "all",
-  },
-};
 export const cache = new InMemoryCache();
 
 export const client = new ApolloClient({
   link,
   cache,
-  defaultOptions: defaultOptions,
 });
 
 ReactDOM.render(
